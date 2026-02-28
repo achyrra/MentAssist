@@ -13,12 +13,12 @@ CREATE TABLE users (
 -- table for clients & client data
 CREATE TABLE clients (
   id SERIAL PRIMARY KEY,
-  counselor_id INT NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+  counselor_id INT NOT NULL REFERENCES users(id),
   first_name TEXT NOT NULL,
   last_name TEXT NOT NULL,
   dob DATE,
-  created_at TIMESTAMPTZ DEFAULT now() 
-  );
+  created_at TIMESTAMPTZ DEFAULT now()
+);
 
 CREATE INDEX idx_clients_counselor ON clients(counselor_id);
 
