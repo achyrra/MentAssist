@@ -1,43 +1,60 @@
-from typing import Dict, List, Optional
+from sqlalchemy import text
+from db.session import engine
 
-from .schemas import AppointmentCreate, AppointmentOut, AppointmentUpdate
+
+def create_appointment(data: dict):
+    q = text("""
+        INSERT INTO appointments (client_id, scheduled_at, location, created_by)
+        VALUES (:client_id, :scheduled_at, :location, :created_by)
+        RETURNING id, client_id, scheduled_at, location, created_by, created_at
+    """)
+    with engine.begin() as conn:
+        r = conn.execute(q, data)
+        return r.mappings().first()
 
 
-class AppointmentRepo:
-    def __init__(self) -> None:
-        self._data: Dict[int, AppointmentOut] = {}
-        self._next_id = 1
+def list_appointments():
+    q = text("""
+        SELECT id, client_id, scheduled_at, location, created_by, created_at
+        FROM appointments
+        ORDER BY scheduled_at DESC
+    """)
+    with engine.connect() as conn:
+        r = conn.execute(q)
+        return r.mappings().all()
 
-    def list(self) -> List[AppointmentOut]:
-        return list(self._data.values())
 
-    def get(self, appointment_id: int) -> Optional[AppointmentOut]:
-        return self._data.get(appointment_id)
+def get_appointment(appointment_id: int):
+    q = text("""
+        SELECT id, client_id, scheduled_at, location, created_by, created_at
+        FROM appointments
+        WHERE id = :id
+    """)
+    with engine.connect() as conn:
+        r = conn.execute(q, {"id": appointment_id})
+        return r.mappings().first()
 
-    def create(self, payload: AppointmentCreate) -> AppointmentOut:
-        appt = AppointmentOut(
-            id=self._next_id,
-            client_id=payload.client_id,
-            scheduled_at=payload.scheduled_at,
-            location=payload.location,
-        )
-        self._data[self._next_id] = appt
-        self._next_id += 1
-        return appt
 
-    def update(self, appointment_id: int, payload: AppointmentUpdate) -> Optional[AppointmentOut]:
-        existing = self._data.get(appointment_id)
-        if not existing:
-            return None
+def update_appointment(appointment_id: int, data: dict):
+    q = text("""
+        UPDATE appointments
+        SET scheduled_at = COALESCE(:scheduled_at, scheduled_at),
+            location = COALESCE(:location, location)
+        WHERE id = :id
+        RETURNING id, client_id, scheduled_at, location, created_by, created_at
+    """)
+    params = {"id": appointment_id, **data}
+    with engine.begin() as conn:
+        r = conn.execute(q, params)
+        return r.mappings().first()
 
-        updated = existing.model_copy(
-            update={
-                "scheduled_at": payload.scheduled_at or existing.scheduled_at,
-                "location": payload.location if payload.location is not None else existing.location,
-            }
-        )
-        self._data[appointment_id] = updated
-        return updated
 
-    def delete(self, appointment_id: int) -> bool:
-        return self._data.pop(appointment_id, None) is not None
+def delete_appointment(appointment_id: int):
+    q = text("""
+        DELETE FROM appointments
+        WHERE id = :id
+        RETURNING id
+    """)
+    with engine.begin() as conn:
+        r = conn.execute(q, {"id": appointment_id})
+        return r.mappings().first() is not None
