@@ -141,24 +141,6 @@ docker compose down
 
 ---
 
-# 8. Common Failure Modes
-
-ModuleNotFoundError: fastapi
-- Virtual environment not activated.
-
-ModuleNotFoundError: appointments.router
-- Router file missing or missing __init__.py.
-
-Import warnings in VSCode
-- Interpreter not set to:
-backend\venv\Scripts\python.exe
-
-Database connection failure
-- Docker not running
-- Wrong credentials in .env
-- Schema not loaded
-
----
 
 Status Checklist
 

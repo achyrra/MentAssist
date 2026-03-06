@@ -1,3 +1,19 @@
-backend/venv/
-backend/__pycache__/
-backend/.env
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environments
+venv/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Distribution
+.dist/
+
+# OS
+.DS_Store
+Thumbs.db
