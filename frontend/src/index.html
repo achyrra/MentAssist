@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MentAssist — Therapy Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream: #F5F0E8; --warm-white: #FAF8F4;
+    --sage: #7A9B8A; --sage-dark: #4E7361; --sage-light: #B8D4C4;
+    --charcoal: #2C2C2C; --mid: #6B6B6B; --light: #A0A0A0;
+    --divider: #E0D8CC; --error: #C0574A; --success: #5A8A6A;
+  }
+
+  body { font-family: 'DM Sans', sans-serif; background: var(--warm-white); color: var(--charcoal); min-height: 100vh; overflow-x: hidden; }
+
+  .page { display: none; min-height: 100vh; animation: fadeIn 0.4s ease; }
+  .page.active { display: flex; flex-direction: column; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* LOGIN */
+  #page-login { background: var(--cream); align-items: center; justify-content: center; position: relative; }
+  #page-login::before { content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse 70% 60% at 60% 40%, rgba(122,155,138,0.15) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 40% at 20% 80%, rgba(196,168,130,0.12) 0%, transparent 60%); }
+  .login-container { width: 100%; max-width: 420px; padding: 24px; position: relative; z-index: 1; }
+  .login-brand { text-align: center; margin-bottom: 48px; }
+  .login-brand .logo-mark { width: 52px; height: 52px; border-radius: 50%; background: var(--sage); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+  .login-brand .logo-mark svg { color: white; }
+  .login-brand h1 { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 400; color: var(--charcoal); letter-spacing: 0.02em; }
+  .login-brand p { font-size: 0.875rem; color: var(--mid); margin-top: 6px; }
+  .login-card { background: white; border-radius: 20px; padding: 36px; border: 1px solid var(--divider); box-shadow: 0 8px 40px rgba(0,0,0,0.06); }
+  .login-error { display: none; color: var(--error); font-size: 0.8375rem; margin-bottom: 14px; text-align: center; background: rgba(192,87,74,0.08); padding: 10px 14px; border-radius: 8px; }
+  .field { margin-bottom: 20px; }
+  .field label { display: block; font-size: 0.8rem; font-weight: 500; color: var(--mid); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 8px; }
+  .field input { width: 100%; padding: 12px 16px; border: 1.5px solid var(--divider); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.9375rem; color: var(--charcoal); background: var(--warm-white); transition: border-color 0.2s, box-shadow 0.2s; outline: none; }
+  .field input:focus { border-color: var(--sage); box-shadow: 0 0 0 3px rgba(122,155,138,0.15); }
+  .btn-primary { width: 100%; padding: 14px; background: var(--sage); color: white; border: none; border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 0.9375rem; font-weight: 500; cursor: pointer; transition: background 0.2s, transform 0.15s, box-shadow 0.2s; margin-top: 8px; }
+  .btn-primary:hover { background: var(--sage-dark); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(78,115,97,0.3); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-primary:disabled { background: var(--light); cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* NAV */
+  .topnav { background: white; border-bottom: 1px solid var(--divider); padding: 0 32px; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .nav-brand { display: flex; align-items: center; gap: 10px; font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 500; color: var(--charcoal); cursor: pointer; }
+  .nav-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--sage); }
+  .nav-right { display: flex; align-items: center; gap: 16px; }
+  .nav-user { font-size: 0.875rem; color: var(--mid); }
+  .nav-role-badge { font-size: 0.75rem; font-weight: 500; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em; background: rgba(78,115,97,0.12); color: var(--sage-dark); }
+  .btn-logout { padding: 8px 16px; border: 1.5px solid var(--divider); border-radius: 8px; background: transparent; font-family: 'DM Sans', sans-serif; font-size: 0.8125rem; color: var(--mid); cursor: pointer; transition: all 0.2s; }
+  .btn-logout:hover { border-color: var(--sage); color: var(--sage-dark); }
+
+  /* CONTENT */
+  .content { flex: 1; padding: 40px 32px; max-width: 1100px; width: 100%; margin: 0 auto; }
+  .page-header { margin-bottom: 36px; }
+  .page-header h2 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 400; color: var(--charcoal); margin-bottom: 6px; }
+  .page-header p { font-size: 0.9rem; color: var(--mid); }
+  .card { background: white; border-radius: 16px; padding: 28px; border: 1px solid var(--divider); box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
+
+  /* QUICK ACTIONS */
+  .quick-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 36px; }
+  .action-card { background: white; border-radius: 16px; padding: 24px; border: 1px solid var(--divider); cursor: pointer; transition: all 0.25s; display: flex; flex-direction: column; gap: 12px; }
+  .action-card:hover { border-color: var(--sage-light); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+  .action-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+  .icon-sage { background: rgba(122,155,138,0.15); color: var(--sage-dark); }
+  .icon-sand { background: rgba(196,168,130,0.18); color: #8B6F4A; }
+  .icon-blue { background: rgba(100,140,180,0.15); color: #4A6E9B; }
+  .icon-rose { background: rgba(180,100,100,0.12); color: #8B4A4A; }
+  .action-card h3 { font-size: 0.9375rem; font-weight: 500; color: var(--charcoal); }
+  .action-card p { font-size: 0.8125rem; color: var(--mid); line-height: 1.5; }
+
+  /* CLIENT LIST */
+  .search-row { display: flex; gap: 12px; margin-bottom: 24px; align-items: center; }
+  .search-input { flex: 1; padding: 10px 16px; border: 1.5px solid var(--divider); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--charcoal); background: var(--warm-white); outline: none; transition: border-color 0.2s; }
+  .search-input:focus { border-color: var(--sage); }
+  .btn-secondary { padding: 10px 20px; border: 1.5px solid var(--sage); border-radius: 10px; background: transparent; color: var(--sage-dark); font-family: 'DM Sans', sans-serif; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .btn-secondary:hover { background: var(--sage); color: white; }
+  .client-table { width: 100%; border-collapse: collapse; }
+  .client-table th { text-align: left; font-size: 0.75rem; font-weight: 500; color: var(--light); letter-spacing: 0.06em; text-transform: uppercase; padding: 0 16px 12px; border-bottom: 1px solid var(--divider); }
+  .client-table td { padding: 16px; border-bottom: 1px solid rgba(224,216,204,0.5); font-size: 0.9rem; }
+  .client-table tr:last-child td { border-bottom: none; }
+  .client-table tr:hover td { background: var(--cream); cursor: pointer; }
+  .client-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--sage-light); display: inline-flex; align-items: center; justify-content: center; font-size: 0.875rem; font-weight: 500; color: var(--sage-dark); }
+  .client-name-cell { display: flex; align-items: center; gap: 12px; }
+  .link-btn { background: none; border: none; color: var(--sage-dark); font-size: 0.875rem; cursor: pointer; text-decoration: underline; font-family: 'DM Sans', sans-serif; }
+  .empty-state { color: var(--light); font-size: 0.875rem; padding: 16px 0; }
+
+  /* CLIENT DETAIL */
+  .detail-header { display: flex; align-items: center; gap: 20px; margin-bottom: 32px; }
+  .detail-avatar { width: 72px; height: 72px; border-radius: 50%; background: var(--sage-light); display: flex; align-items: center; justify-content: center; font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; color: var(--sage-dark); }
+  .detail-info h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; font-weight: 400; }
+  .detail-info p { font-size: 0.875rem; color: var(--mid); margin-top: 4px; }
+  .tab-row { display: flex; gap: 4px; border-bottom: 1px solid var(--divider); margin-bottom: 28px; }
+  .tab-btn { padding: 10px 20px; border: none; background: none; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--mid); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.2s; }
+  .tab-btn.active { color: var(--sage-dark); border-bottom-color: var(--sage); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+  .session-note { padding: 16px; border-radius: 12px; border: 1px solid var(--divider); margin-bottom: 12px; background: var(--warm-white); }
+  .session-note .note-date { font-size: 0.75rem; color: var(--light); margin-bottom: 6px; }
+  .session-note .note-text { font-size: 0.9rem; line-height: 1.6; }
+  textarea.field-input { width: 100%; min-height: 100px; padding: 12px 16px; border: 1.5px solid var(--divider); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--charcoal); background: var(--warm-white); resize: vertical; outline: none; transition: border-color 0.2s; margin-bottom: 12px; }
+  textarea.field-input:focus { border-color: var(--sage); }
+  .readonly-input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--divider); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; background: var(--cream); color: var(--charcoal); outline: none; }
+
+  /* FORMS */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .form-grid .full { grid-column: 1/-1; }
+  .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 0.875rem; color: var(--mid); cursor: pointer; border: none; background: none; font-family: 'DM Sans', sans-serif; margin-bottom: 24px; padding: 0; transition: color 0.2s; }
+  .back-link:hover { color: var(--sage-dark); }
+
+  /* RESOURCES */
+  .tag-filter { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+  .tag { padding: 6px 14px; border-radius: 20px; font-size: 0.8125rem; cursor: pointer; border: 1.5px solid var(--divider); background: white; color: var(--mid); transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+  .tag.active { background: var(--sage); border-color: var(--sage); color: white; }
+  .resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+  .resource-card { background: white; border: 1px solid var(--divider); border-radius: 14px; padding: 20px; transition: all 0.2s; cursor: pointer; }
+  .resource-card:hover { border-color: var(--sage-light); box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+  .resource-type { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--sage-dark); font-weight: 500; margin-bottom: 8px; }
+  .resource-card h4 { font-size: 0.9375rem; font-weight: 500; margin-bottom: 8px; }
+  .resource-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
+  .resource-tag { padding: 3px 10px; border-radius: 12px; background: var(--cream); color: var(--mid); font-size: 0.75rem; }
+
+  /* TREATMENT PLAN */
+  .goal-list { list-style: none; }
+  .goal-item { padding: 16px 20px; border: 1px solid var(--divider); border-radius: 12px; margin-bottom: 10px; background: white; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .goal-item:hover { border-color: var(--sage-light); }
+  .goal-check { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--sage-light); flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+  .goal-check.done { background: var(--sage); border-color: var(--sage); }
+  .goal-check.done::after { content: '✓'; color: white; font-size: 0.7rem; }
+  .goal-text { flex: 1; }
+  .goal-text strong { font-size: 0.9rem; font-weight: 500; display: block; margin-bottom: 4px; }
+  .goal-text span { font-size: 0.8125rem; color: var(--mid); line-height: 1.5; }
+  .btn-icon { width: 32px; height: 32px; border-radius: 8px; border: none; background: var(--cream); color: var(--mid); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; transition: all 0.2s; flex-shrink: 0; }
+  .btn-icon:hover { background: #f0e8dc; color: var(--charcoal); }
+  .plan-media { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  .media-chip { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; background: var(--cream); border: 1px solid var(--divider); font-size: 0.8125rem; color: var(--mid); cursor: pointer; transition: all 0.2s; }
+  .media-chip:hover { border-color: var(--sage); color: var(--sage-dark); }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 32px; right: 32px; background: var(--charcoal); color: white; padding: 14px 22px; border-radius: 12px; font-size: 0.875rem; z-index: 1000; transform: translateY(80px); opacity: 0; transition: all 0.35s cubic-bezier(.34,1.56,.64,1); pointer-events: none; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  @media (max-width: 700px) {
+    .content { padding: 24px 16px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .quick-actions { grid-template-columns: 1fr 1fr; }
+    .topnav { padding: 0 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- ============================================================ -->
+<!-- LOGIN PAGE -->
+<!-- ============================================================ -->
+<div class="page active" id="page-login">
+  <div class="login-container">
+    <div class="login-brand">
+      <div class="logo-mark">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <h1>MentAssist</h1>
+      <p>Therapeutic Care Platform</p>
+    </div>
+    <div class="login-card">
+      <p class="login-error" id="login-error"></p>
+      <div class="field">
+        <label>Email Address</label>
+        <input type="email" placeholder="you@example.com" id="login-email"/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" placeholder="••••••••" id="login-password"
+               onkeydown="if(event.key==='Enter') doLogin()"/>
+      </div>
+      <button class="btn-primary" id="login-btn" onclick="doLogin()">Sign In</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- DASHBOARD HOME -->
+<!-- ============================================================ -->
+<div class="page" id="page-home">
+  <nav class="topnav">
+    <div class="nav-brand" onclick="nav('home')"><div class="nav-dot"></div>MentAssist</div>
+    <div class="nav-right">
+      <span class="nav-user" id="nav-username"></span>
+      <span class="nav-role-badge" id="nav-role-badge"></span>
+      <button class="btn-logout" onclick="logout()">Sign Out</button>
+    </div>
+  </nav>
+  <div class="content">
+    <div class="page-header">
+      <h2 id="home-greeting">Welcome</h2>
+      <p>Here's an overview of your practice today.</p>
+    </div>
+    <div class="quick-actions">
+      <div class="action-card" onclick="nav('client-list')">
+        <div class="action-icon icon-sage">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <h3>Client List</h3>
+        <p>View and manage all existing clients in your practice.</p>
+      </div>
+      <div class="action-card" onclick="nav('intake-form')">
+        <div class="action-icon icon-sand">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+        </div>
+        <h3>Add New Client</h3>
+        <p>Register a new client with intake information.</p>
+      </div>
+      <div class="action-card" onclick="nav('resource-library')">
+        <div class="action-icon icon-blue">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        </div>
+        <h3>Media Manager</h3>
+        <p>Upload and organize therapeutic resources and media.</p>
+      </div>
+      <div class="action-card" onclick="nav('treatment-plan')">
+        <div class="action-icon icon-rose">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </div>
+        <h3>Treatment Plans</h3>
+        <p>Develop and manage treatment plans for clients.</p>
+      </div>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:400;">Recent Clients</h3>
+        <button class="link-btn" onclick="nav('client-list')">View all →</button>
+      </div>
+      <table class="client-table">
+        <thead><tr><th>Client</th><th>Date of Birth</th><th>Added</th></tr></thead>
+        <tbody id="recent-clients-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CLIENT LIST -->
+<!-- ============================================================ -->
+<div class="page" id="page-client-list">
+  <nav class="topnav">
+    <div class="nav-brand" onclick="nav('home')"><div class="nav-dot"></div>MentAssist</div>
+    <div class="nav-right">
+      <span class="nav-user" id="nav-username-2"></span>
+      <span class="nav-role-badge" id="nav-role-badge-2"></span>
+      <button class="btn-logout" onclick="logout()">Sign Out</button>
+    </div>
+  </nav>
+  <div class="content">
+    <button class="back-link" onclick="nav('home')">← Back to Home</button>
+    <div class="page-header">
+      <h2>Client Directory</h2>
+      <p>All clients assigned to you.</p>
+    </div>
+    <div class="search-row">
+      <input class="search-input" placeholder="Search by name…" oninput="filterClients(this.value)"/>
+      <button class="btn-secondary" onclick="nav('intake-form')">+ Add New Client</button>
+    </div>
+    <div class="card">
+      <table class="client-table">
+        <thead><tr><th>Client</th><th>Date of Birth</th><th>Added</th><th>Actions</th></tr></thead>
+        <tbody id="client-list-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CLIENT DETAIL -->
+<!-- ============================================================ -->
+<div class="page" id="page-client-detail">
+  <nav class="topnav">
+    <div class="nav-brand" onclick="nav('home')"><div class="nav-dot"></div>MentAssist</div>
+    <div class="nav-right">
+      <span class="nav-role-badge" id="nav-role-badge-3"></span>
+      <button class="btn-logout" onclick="logout()">Sign Out</button>
+    </div>
+  </nav>
+  <div class="content">
+    <button class="back-link" onclick="nav('client-list')">← Back to Clients</button>
+    <div class="detail-header">
+      <div class="detail-avatar" id="detail-avatar">—</div>
+      <div class="detail-info">
+        <h2 id="detail-name">—</h2>
+        <p id="detail-dob">—</p>
+      </div>
+      <button class="btn-secondary" style="margin-left:auto;" onclick="nav('treatment-plan')">Open Treatment Plan</button>
+    </div>
+    <div class="tab-row">
+      <button class="tab-btn active" onclick="switchTab('notes', this)">Session Notes</button>
+      <button class="tab-btn" onclick="switchTab('info', this)">Client Info</button>
+    </div>
+    <div class="tab-content active" id="tab-notes">
+      <div id="session-notes-list"></div>
+      <div class="card" style="margin-top:20px;">
+        <h4 style="font-size:0.875rem;font-weight:500;margin-bottom:12px;">Add Session Note</h4>
+        <textarea class="field-input" id="new-note-input" placeholder="Write a note about today's session…"></textarea>
+        <button class="btn-primary" style="width:auto;padding:10px 24px;" onclick="addNote()">Save Note</button>
+      </div>
+    </div>
+    <div class="tab-content" id="tab-info">
+      <div class="card">
+        <div class="form-grid">
+          <div class="field">
+            <label>First Name</label>
+            <input class="readonly-input" type="text" id="detail-fname" readonly>
+          </div>
+          <div class="field">
+            <label>Last Name</label>
+            <input class="readonly-input" type="text" id="detail-lname" readonly>
+          </div>
+          <div class="field">
+            <label>Date of Birth</label>
+            <input class="readonly-input" type="text" id="detail-dob2" readonly>
+          </div>
+          <div class="field">
+            <label>Added</label>
+            <input class="readonly-input" type="text" id="detail-created" readonly>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- INTAKE FORM -->
+<!-- ============================================================ -->
+<div class="page" id="page-intake-form">
+  <nav class="topnav">
+    <div class="nav-brand" onclick="nav('home')"><div class="nav-dot"></div>MentAssist</div>
+    <div class="nav-right">
+      <span class="nav-role-badge" id="nav-role-badge-4"></span>
+      <button class="btn-logout" onclick="logout()">Sign Out</button>
+    </div>
+  </nav>
+  <div class="content">
+    <button class="back-link" onclick="nav('client-list')">← Back to Clients</button>
+    <div class="page-header">
+      <h2>New Client Intake</h2>
+      <p>Fill in the details below to register a new client.</p>
+    </div>
+    <div class="card" style="max-width:560px;">
+      <div class="form-grid">
+        <div class="field">
+          <label>First Name</label>
+          <input type="text" id="new-fname" placeholder="Jane"/>
+        </div>
+        <div class="field">
+          <label>Last Name</label>
+          <input type="text" id="new-lname" placeholder="Smith"/>
+        </div>
+        <div class="field full">
+          <label>Date of Birth</label>
+          <input type="date" id="new-dob"/>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:8px;">
+        <button class="btn-primary" style="flex:1;" onclick="createClient('home')">Save & Go to Home</button>
+        <button class="btn-secondary" onclick="createClient('detail')">Save & View Client</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- RESOURCE LIBRARY -->
+<!-- ============================================================ -->
+<div class="page" id="page-resource-library">
+  <nav class="topnav">
+    <div class="nav-brand" onclick="nav('home')"><div class="nav-dot"></div>MentAssist</div>
+    <div class="nav-right">
+      <span class="nav-role-badge" id="nav-role-badge-5"></span>
+      <button class="btn-logout" onclick="logout()">Sign Out</button>
+    </div>
+  </nav>
+  <div class="content">
+    <button class="back-link" onclick="nav('home')">← Back to Home</button>
+    <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-end;">
+      <div>
+        <h2>Resource Library</h2>
+        <p>Curate and tag therapeutic media for your clients.</p>
+      </div>
+      <button class="btn-secondary" onclick="showUploadModal()">+ Upload Resource</button>
+    </div>
+    <div class="tag-filter" id="tag-filter-row"></div>
+    <div class="resource-grid" id="resource-grid"></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TREATMENT PLAN -->
+<!-- ============================================================ -->
+<div class="page" id="page-treatment-plan">
+  <nav class="topnav">
+    <div class="nav-brand" onclick="nav('home')"><div class="nav-dot"></div>MentAssist</div>
+    <div class="nav-right">
+      <span class="nav-role-badge" id="nav-role-badge-6"></span>
+      <button class="btn-logout" onclick="logout()">Sign Out</button>
+    </div>
+  </nav>
+  <div class="content">
+    <button class="back-link" onclick="nav('client-detail')">← Back to Client</button>
+    <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-end;">
+      <div>
+        <h2>Treatment Plan Workspace</h2>
+        <p id="plan-client-subtitle">Develop goals, objectives, and attached media.</p>
+      </div>
+      <button class="btn-secondary" onclick="savePlan()">Save Plan</button>
+    </div>
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:24px;">
+      <div>
+        <div class="card" style="margin-bottom:20px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:400;">Goals & Objectives</h3>
+            <button class="btn-secondary" onclick="addGoal()" style="font-size:0.8125rem;padding:7px 14px;">+ Add Goal</button>
+          </div>
+          <ul class="goal-list" id="goals-list"></ul>
+        </div>
+        <div class="card">
+          <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:400;margin-bottom:14px;">Attached Media</h3>
+          <div class="plan-media" id="plan-media-list"></div>
+          <button class="btn-secondary" style="font-size:0.8125rem;padding:7px 14px;margin-top:14px;" onclick="attachMedia()">+ Attach from Library</button>
+        </div>
+      </div>
+      <div class="card" style="height:fit-content;">
+        <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:400;margin-bottom:14px;">Plan Overview</h3>
+        <div style="font-size:0.875rem;color:var(--mid);line-height:1.9;">
+          <p>Client: <strong style="color:var(--charcoal);" id="ps-name">—</strong></p>
+          <p>Goals: <strong style="color:var(--charcoal);" id="ps-goals">0</strong></p>
+          <p>Attached Media: <strong style="color:var(--charcoal);" id="ps-media">0</strong></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- JAVASCRIPT -->
+<!-- ============================================================ -->
+<script>
+// ===== CONFIG =====
+const API_BASE = window.ENV?.API_URL ?? '/api';
+
+// ===== STATE =====
+let currentUser   = null;  // { id, first_name, last_name, email, role } from API
+let currentClient = null;
+let clients   = [];
+let resources = [];
+let goals     = [];
+let planMedia = [];
+
+// ===== UTILS =====
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ===== NAVIGATION =====
+function nav(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page)?.classList.add('active');
+  updateAllBadges();
+  if (page === 'home')             renderHome();
+  if (page === 'client-list')      renderClientList();
+  if (page === 'resource-library') renderResources();
+  if (page === 'treatment-plan')   renderTreatmentPlan();
+}
+
+// ===== UPDATE NAV BADGES & GREETING =====
+function updateAllBadges() {
+  if (!currentUser) return;
+  const roleLabel = cap(currentUser.role);
+  const fullName  = `${currentUser.first_name} ${currentUser.last_name}`;
+  document.querySelectorAll('[id^="nav-username"]').forEach(el => el.textContent = fullName);
+  document.querySelectorAll('[id^="nav-role-badge"]').forEach(el => el.textContent = roleLabel);
+}
+
+// ===== LOGIN =====
+async function doLogin() {
+  const email    = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errEl    = document.getElementById('login-error');
+  const btn      = document.getElementById('login-btn');
+
+  errEl.style.display = 'none';
+  if (!email || !password) {
+    errEl.textContent = 'Please enter your email and password.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Signing in…';
+
+  try {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (!res.ok) {
+      errEl.textContent = 'Invalid email or password.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    currentUser = await res.json(); // { id, first_name, last_name, email, role }
+    await loadInitialData();
+    nav('home');
+
+  } catch (err) {
+    errEl.textContent = 'Could not reach the server. Please try again.';
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
+  }
+}
+
+function logout() {
+  fetch(`${API_BASE}/auth/logout`, { method: 'POST', credentials: 'include' }).catch(() => {});
+  currentUser = null;
+  clients = []; resources = []; goals = []; planMedia = [];
+  document.getElementById('login-email').value    = '';
+  document.getElementById('login-password').value = '';
+  document.getElementById('login-error').style.display = 'none';
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-login').classList.add('active');
+}
+
+// ===== LOAD DATA =====
+async function loadInitialData() {
+  try {
+    const [cRes, rRes] = await Promise.all([
+      fetch(`${API_BASE}/clients`,   { credentials: 'include' }),
+      fetch(`${API_BASE}/resources`, { credentials: 'include' }),
+    ]);
+    if (!cRes.ok || !rRes.ok) throw new Error('API error');
+    clients   = await cRes.json();
+    resources = await rRes.json();
+  } catch (err) {
+    console.error('Failed to load data:', err);
+    showToast('Could not connect to server');
+  }
+}
+
+// ===== HOME =====
+function renderHome() {
+  if (!currentUser) return;
+  const displayName = currentUser.title
+    ? `${currentUser.title} ${currentUser.last_name}`
+    : currentUser.first_name;
+  document.getElementById('home-greeting').textContent = `${greeting()}, ${displayName}`;
+
+  const tbody = document.getElementById('recent-clients-tbody');
+  if (!clients.length) {
+    tbody.innerHTML = '<tr><td colspan="3" class="empty-state">No clients yet. Add your first client to get started.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = clients.slice(0, 3).map(c => `
+    <tr onclick="openClient(${c.id})">
+      <td><div class="client-name-cell">
+        <div class="client-avatar">${c.first_name[0]}${c.last_name[0]}</div>
+        ${c.first_name} ${c.last_name}
+      </div></td>
+      <td>${formatDate(c.dob)}</td>
+      <td>${c.created_at ? formatDate(c.created_at.slice(0,10)) : '—'}</td>
+    </tr>
+  `).join('');
+}
+
+// ===== CLIENT LIST =====
+function renderClientList(filter = '') {
+  const tbody    = document.getElementById('client-list-tbody');
+  const filtered = clients.filter(c =>
+    `${c.first_name} ${c.last_name}`.toLowerCase().includes(filter.toLowerCase())
+  );
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No clients found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = filtered.map(c => `
+    <tr onclick="openClient(${c.id})">
+      <td><div class="client-name-cell">
+        <div class="client-avatar">${c.first_name[0]}${c.last_name[0]}</div>
+        ${c.first_name} ${c.last_name}
+      </div></td>
+      <td>${formatDate(c.dob)}</td>
+      <td>${c.created_at ? formatDate(c.created_at.slice(0,10)) : '—'}</td>
+      <td><button class="link-btn" onclick="event.stopPropagation();openClient(${c.id})">View</button></td>
+    </tr>
+  `).join('');
+}
+
+function filterClients(v) { renderClientList(v); }
+
+async function openClient(id) {
+  currentClient = clients.find(c => c.id === id);
+  if (!currentClient) return;
+
+  try {
+    const [notesRes, goalsRes] = await Promise.all([
+      fetch(`${API_BASE}/clients/${id}/notes`, { credentials: 'include' }),
+      fetch(`${API_BASE}/clients/${id}/plan/goals`, { credentials: 'include' }),
+    ]);
+    currentClient.notes = notesRes.ok ? await notesRes.json() : [];
+    goals = goalsRes.ok ? await goalsRes.json() : [];
+  } catch {
+    currentClient.notes = [];
+    goals = [];
+  }
+
+  document.getElementById('detail-avatar').textContent  = currentClient.first_name[0] + currentClient.last_name[0];
+  document.getElementById('detail-name').textContent    = `${currentClient.first_name} ${currentClient.last_name}`;
+  document.getElementById('detail-dob').textContent     = `DOB: ${formatDate(currentClient.dob)}`;
+  document.getElementById('detail-fname').value         = currentClient.first_name;
+  document.getElementById('detail-lname').value         = currentClient.last_name;
+  document.getElementById('detail-dob2').value          = formatDate(currentClient.dob);
+  document.getElementById('detail-created').value       = currentClient.created_at ? formatDate(currentClient.created_at.slice(0,10)) : '—';
+  document.getElementById('ps-name').textContent        = `${currentClient.first_name} ${currentClient.last_name}`;
+  document.getElementById('plan-client-subtitle').textContent =
+    `Developing goals and resources for ${currentClient.first_name} ${currentClient.last_name}.`;
+
+  renderSessionNotes();
+
+  // reset tabs
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelector('.tab-btn').classList.add('active');
+  document.getElementById('tab-notes').classList.add('active');
+
+  nav('client-detail');
+}
+
+function renderSessionNotes() {
+  const list = document.getElementById('session-notes-list');
+  if (!currentClient.notes?.length) {
+    list.innerHTML = '<p class="empty-state">No session notes yet.</p>';
+    return;
+  }
+  list.innerHTML = currentClient.notes.map(n => `
+    <div class="session-note">
+      <div class="note-date">${(n.date || n.created_at || '').slice(0,10)}</div>
+      <div class="note-text">${n.text || n.content}</div>
+    </div>
+  `).join('');
+}
+
+async function addNote() {
+  const input = document.getElementById('new-note-input');
+  const text  = input.value.trim();
+  if (!text || !currentClient) return;
+  try {
+    const res = await fetch(`${API_BASE}/clients/${currentClient.id}/notes`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ content: text }),
+    });
+    if (!res.ok) throw new Error();
+    const saved = await res.json();
+    currentClient.notes.unshift(saved);
+    input.value = '';
+    renderSessionNotes();
+    showToast('Session note saved');
+  } catch { showToast('Failed to save note'); }
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// ===== INTAKE FORM =====
+async function createClient(dest) {
+  const fn  = document.getElementById('new-fname').value.trim();
+  const ln  = document.getElementById('new-lname').value.trim();
+  const dob = document.getElementById('new-dob').value;
+  if (!fn || !ln || !dob) { showToast('Please fill all fields'); return; }
+  try {
+    const res = await fetch(`${API_BASE}/clients`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ first_name: fn, last_name: ln, dob }),
+    });
+    if (!res.ok) throw new Error();
+    const newC = await res.json();
+    clients.push(newC);
+    document.getElementById('new-fname').value = '';
+    document.getElementById('new-lname').value = '';
+    document.getElementById('new-dob').value   = '';
+    showToast(`${fn} ${ln} added successfully`);
+    if (dest === 'home') nav('home');
+    else openClient(newC.id);
+  } catch { showToast('Failed to create client'); }
+}
+
+// ===== RESOURCES =====
+let activeTag = null;
+function renderResources() {
+  const allTags = [...new Set(resources.flatMap(r => r.tags ?? []))];
+  document.getElementById('tag-filter-row').innerHTML =
+    `<button class="tag ${!activeTag ? 'active' : ''}" onclick="filterByTag(null,this)">All</button>` +
+    allTags.map(t => `<button class="tag ${activeTag===t?'active':''}" onclick="filterByTag('${t}',this)">${t}</button>`).join('');
+
+  const filtered = activeTag ? resources.filter(r => (r.tags??[]).includes(activeTag)) : resources;
+  const grid = document.getElementById('resource-grid');
+  if (!filtered.length) { grid.innerHTML = '<p class="empty-state">No resources found.</p>'; return; }
+  grid.innerHTML = filtered.map(r => `
+    <div class="resource-card">
+      <div class="resource-type">${r.type}</div>
+      <h4>${r.title}</h4>
+      <p style="font-size:0.8125rem;color:var(--mid);">Click to preview or attach to a treatment plan.</p>
+      <div class="resource-tags">${(r.tags??[]).map(t=>`<span class="resource-tag">${t}</span>`).join('')}</div>
+    </div>
+  `).join('');
+}
+function filterByTag(tag, btn) {
+  activeTag = tag;
+  document.querySelectorAll('#tag-filter-row .tag').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderResources();
+}
+function showUploadModal() { showToast('Upload dialog coming soon'); }
+
+// ===== TREATMENT PLAN =====
+function renderTreatmentPlan() {
+  const list = document.getElementById('goals-list');
+  if (!goals.length) {
+    list.innerHTML = '<p class="empty-state" style="padding:8px 0;">No goals yet. Add one above.</p>';
+  } else {
+    list.innerHTML = goals.map(g => `
+      <li class="goal-item">
+        <div class="goal-check ${g.done?'done':''}" onclick="toggleGoal(${g.id})"></div>
+        <div class="goal-text">
+          <strong>${g.title}</strong>
+          <span>${g.description || ''}</span>
+        </div>
+        <button class="btn-icon" onclick="removeGoal(${g.id})" title="Remove">×</button>
+      </li>
+    `).join('');
+  }
+  document.getElementById('plan-media-list').innerHTML =
+    planMedia.map(m => `<div class="media-chip">📄 ${m.name || m.title}</div>`).join('');
+  document.getElementById('ps-goals').textContent = goals.length;
+  document.getElementById('ps-media').textContent = planMedia.length;
+}
+
+async function toggleGoal(id) {
+  const g = goals.find(x => x.id === id);
+  if (!g) return;
+  g.done = !g.done;
+  try {
+    await fetch(`${API_BASE}/goals/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ done: g.done }),
+    });
+  } catch { /* optimistic — UI already updated */ }
+  renderTreatmentPlan();
+}
+
+async function removeGoal(id) {
+  try {
+    const res = await fetch(`${API_BASE}/goals/${id}`, { method: 'DELETE', credentials: 'include' });
+    if (!res.ok) throw new Error();
+  } catch { showToast('Failed to remove goal'); return; }
+  goals = goals.filter(x => x.id !== id);
+  renderTreatmentPlan();
+  showToast('Goal removed');
+}
+
+async function addGoal() {
+  const title = prompt('Goal title:');
+  if (!title) return;
+  const desc = prompt('Objective / description:') || '';
+  try {
+    const res = await fetch(`${API_BASE}/clients/${currentClient?.id}/plan/goals`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ title, description: desc }),
+    });
+    if (!res.ok) throw new Error();
+    goals.push(await res.json());
+  } catch {
+    goals.push({ id: Date.now(), title, description: desc, done: false });
+  }
+  renderTreatmentPlan();
+}
+
+async function savePlan() {
+  try {
+    const res = await fetch(`${API_BASE}/clients/${currentClient?.id}/plan`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ goals, media: planMedia }),
+    });
+    if (!res.ok) throw new Error();
+    showToast('Plan saved successfully');
+  } catch { showToast('Failed to save plan'); }
+}
+
+function attachMedia() {
+  if (!resources.length) { showToast('No resources available'); return; }
+  const res = resources[Math.floor(Math.random() * resources.length)];
+  if (!planMedia.find(m => (m.name||m.title) === res.title)) {
+    planMedia.push({ name: res.title, icon: '📄' });
+    renderTreatmentPlan();
+    showToast(`"${res.title}" attached`);
+  }
+}
+</script>
+</body>
+</html>
