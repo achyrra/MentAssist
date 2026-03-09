@@ -1,5 +1,5 @@
 from sqlalchemy import text
-from db.session import engine
+from app.db.session import engine
 
 def create_client(data: dict):
     q = text("""
