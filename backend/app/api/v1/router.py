@@ -1,7 +1,7 @@
 from fastapi import APIRouter
-from clients.router import router as clients_router
-from appointments.router import router as appointments_router
-from users.router import router as users_router
+from app.clients.router import router as clients_router
+from app.appointments.router import router as appointments_router
+from app.users.router import router as users_router
 
 router = APIRouter()
 router.include_router(clients_router, prefix="/clients", tags=["clients"])

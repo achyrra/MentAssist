@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from sqlalchemy import text
-from db.session import engine
-from api.v1.router import router as v1_router
+from app.db.session import engine
+from app.api.v1.router import router as v1_router
 
 app = FastAPI(title="MentAssist API")
 
