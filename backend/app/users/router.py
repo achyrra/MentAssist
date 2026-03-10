@@ -1,7 +1,6 @@
-import bcrypt
 from fastapi import APIRouter, HTTPException
 from datetime import datetime
-from app.core.security import create_access_token, verify_password
+from app.core.security import create_access_token, verify_password, hash_password
 from . import repo
 from .schemas import UserCreate, UserOut
 from .schemas import UserLogin
@@ -18,7 +17,7 @@ def register(payload: UserCreate):
     if payload.role not in ("counselor", "admin"):
         raise HTTPException(status_code=400, detail="Invalid role")
 
-    password_hash = bcrypt.hashpw(payload.password.encode(), bcrypt.gensalt()).decode()
+    password_hash = hash_password(payload.password)
     user = repo.create_user(payload.email, password_hash, payload.role)
     return user
 
@@ -31,7 +30,7 @@ def get_user(user_id: int):
     return user
 
 
-# Login endpoint intentionally omitted — requires JWT spec from opsec
+# Login endpoint 
 @router.post("/login")
 def login(payload: UserLogin):
     user = repo.get_user_by_email(payload.email)

@@ -24,3 +24,6 @@ def decode_access_token(token: str) -> dict:
         return jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
     except JWTError:
         return None
+    
+def hash_password(plain: str) -> str:
+    return pwd_context.hash(plain)
