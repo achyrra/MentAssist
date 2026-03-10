@@ -518,7 +518,7 @@ async function doLogin() {
   btn.textContent = 'Signing in…';
 
   try {
-    const res = await fetch(`${API_BASE}/auth/login`, {
+    const res = await fetch(`${API_BASE}/users/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -545,7 +545,7 @@ async function doLogin() {
 }
 
 function logout() {
-  fetch(`${API_BASE}/auth/logout`, { method: 'POST', credentials: 'include' }).catch(() => {});
+  fetch(`${API_BASE}/users/logout`, { method: 'POST', credentials: 'include' }).catch(() => {});
   currentUser = null;
   clients = []; resources = []; goals = []; planMedia = [];
   document.getElementById('login-email').value    = '';
