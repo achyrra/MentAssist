@@ -16,7 +16,7 @@ Please see "SETUP_DB.md" for instructions on setting up the database.
     - docker compose up --build
     - docker compose ps
 3. Verify all services are running
-4. Confirm backend docs are reachable (http://localhost/api/docs)
+4. Confirm backend docs are reachable (http://localhost/api/v1/docs)
 5. Open app (http://localhost)
 6. Login:
     - Email: counselor1@mentassist.com
