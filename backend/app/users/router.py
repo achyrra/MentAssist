@@ -1,7 +1,10 @@
 import bcrypt
 from fastapi import APIRouter, HTTPException
+from datetime import datetime
+from app.core.security import create_access_token, verify_password
 from . import repo
 from .schemas import UserCreate, UserOut
+from .schemas import UserLogin
 
 router = APIRouter()
 
@@ -29,3 +32,21 @@ def get_user(user_id: int):
 
 
 # Login endpoint intentionally omitted — requires JWT spec from opsec
+@router.post("/login")
+def login(payload: UserLogin):
+    user = repo.get_user_by_email(payload.email)
+    if not user or not verify_password(payload.password, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    if user["status"] != "active":
+        raise HTTPException(status_code=403, detail="User account is disabled")
+    
+    token = create_access_token(user["id"], user["role"])
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": {
+            "id": user["id"],
+            "email": user["email"],
+            "role": user["role"]
+        }
+    }
