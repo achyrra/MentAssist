@@ -1,37 +1,39 @@
+from sqlalchemy.orm import Session
 from sqlalchemy import text
-from app.db.session import engine
 
-def create_client(data: dict):
+
+def create_client(db: Session, data: dict):
     q = text("""
         INSERT INTO clients (counselor_id, first_name, last_name, dob)
         VALUES (:counselor_id, :first_name, :last_name, :dob)
         RETURNING id, counselor_id, first_name, last_name, dob, created_at
     """)
-    with engine.begin() as conn:
-        r = conn.execute(q, data)
-        return r.mappings().first()
+    r = db.execute(q, data)
+    db.commit()
+    return r.mappings().first()
 
-def list_clients():
+
+def list_clients(db: Session):
     q = text("""
         SELECT id, counselor_id, first_name, last_name, dob, created_at
         FROM clients
         ORDER BY id
     """)
-    with engine.connect() as conn:
-        r = conn.execute(q)
-        return r.mappings().all()
+    r = db.execute(q)
+    return r.mappings().all()
 
-def get_client(client_id: int):
+
+def get_client(db: Session, client_id: int):
     q = text("""
         SELECT id, counselor_id, first_name, last_name, dob, created_at
         FROM clients
         WHERE id = :id
     """)
-    with engine.connect() as conn:
-        r = conn.execute(q, {"id": client_id})
-        return r.mappings().first()
+    r = db.execute(q, {"id": client_id})
+    return r.mappings().first()
 
-def update_client(client_id: int, data: dict):
+
+def update_client(db: Session, client_id: int, data: dict):
     q = text("""
         UPDATE clients
         SET first_name = COALESCE(:first_name, first_name),
@@ -40,7 +42,6 @@ def update_client(client_id: int, data: dict):
         WHERE id = :id
         RETURNING id, counselor_id, first_name, last_name, dob, created_at
     """)
-    params = {"id": client_id, **data}
-    with engine.begin() as conn:
-        r = conn.execute(q, params)
-        return r.mappings().first()
+    r = db.execute(q, {"id": client_id, **data})
+    db.commit()
+    return r.mappings().first()

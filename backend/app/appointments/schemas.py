@@ -7,6 +7,7 @@ class AppointmentCreate(BaseModel):
     client_id: int = Field(..., ge=1)
     scheduled_at: datetime
     location: Optional[str] = None
+    created_by: Optional[int] = None
 
 
 class AppointmentUpdate(BaseModel):
