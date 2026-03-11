@@ -531,7 +531,11 @@ async function doLogin() {
       return;
     }
 
-    currentUser = await res.json(); // { id, first_name, last_name, email, role }
+    const data = await res.json();
+    currentUser = {
+      ...data.user,
+      access_token: data.access_token,
+    };
     await loadInitialData();
     nav('home');
 

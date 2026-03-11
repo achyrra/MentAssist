@@ -18,7 +18,7 @@ def register(payload: UserCreate):
         raise HTTPException(status_code=400, detail="Invalid role")
 
     password_hash = hash_password(payload.password)
-    user = repo.create_user(payload.email, password_hash, payload.role)
+    user = repo.create_user(payload.email, password_hash, payload.role, payload.first_name, payload.last_name)
     return user
 
 
@@ -46,6 +46,8 @@ def login(payload: UserLogin):
         "user": {
             "id": user["id"],
             "email": user["email"],
-            "role": user["role"]
+            "role": user["role"],
+            "first_name": user["first_name"],
+            "last_name": user["last_name"]
         }
     }
