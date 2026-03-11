@@ -19,4 +19,4 @@ venv/
 Thumbs.db
 
 # DB Hash -- prevents the generated hash from being committed, which can cause merge conflicts
-git update-index --assume-unchanged mentassistdb/scripts/seed_dev.sql
+mentassistdb/scripts/seed_dev.sql
