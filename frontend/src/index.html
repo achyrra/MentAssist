@@ -561,18 +561,21 @@ function logout() {
 
 // ===== LOAD DATA =====
 async function loadInitialData() {
+  const token = currentUser?.access_token;
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+  };
   try {
-    const [cRes, rRes] = await Promise.all([
-      fetch(`${API_BASE}/clients`,   { credentials: 'include' }),
-      fetch(`${API_BASE}/resources`, { credentials: 'include' }),
-    ]);
-    if (!cRes.ok || !rRes.ok) throw new Error('API error');
-    clients   = await cRes.json();
-    resources = await rRes.json();
+    const cRes = await fetch(`${API_BASE}/clients`, { headers, credentials: 'include' });
+    if (!cRes.ok) throw new Error('Clients fetch failed: ${cRes.status}');
+    clients = await cRes.json();
   } catch (err) {
-    console.error('Failed to load data:', err);
-    showToast('Could not connect to server');
+    console.error(err);
+    showToast('Could not load clients');
   }
+  // Resources endpoint not yet implemented -- skipping for now
+  resources = [];
 }
 
 // ===== HOME =====

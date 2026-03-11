@@ -4,12 +4,12 @@ from . import repo
 
 router = APIRouter()
 
-@router.post("/", status_code=201)
+@router.post("", status_code=201)
 def create_client(payload: ClientCreate):
     created = repo.create_client(payload.model_dump())
     return created
 
-@router.get("/")
+@router.get("")
 def list_clients():
     return repo.list_clients()
 
