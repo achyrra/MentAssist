@@ -5,7 +5,7 @@ from .schemas import AppointmentCreate, AppointmentUpdate, AppointmentOut
 router = APIRouter()
 
 
-@router.get("/", response_model=list[AppointmentOut])
+@router.get("", response_model=list[AppointmentOut])
 def list_appointments():
     return repo.list_appointments()
 
@@ -18,7 +18,7 @@ def get_appointment(appointment_id: int):
     return appt
 
 
-@router.post("/", response_model=AppointmentOut, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=AppointmentOut, status_code=status.HTTP_201_CREATED)
 def create_appointment(payload: AppointmentCreate):
     data = payload.model_dump()
     data.setdefault("created_by", None)
