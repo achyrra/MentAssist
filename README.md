@@ -9,9 +9,9 @@ Please see "SETUP_DB.md" for instructions on setting up the database.
 # Dev Env Setup
 1. Clone repo at https://github.com/achyrra/MentAssist.git
 2. In terminal use following commands:
-    - cp mentassistdb\.env.example mentassistdb\.env
+    - cp \mentassistdb\.env.example \mentassistdb\.env
         - Do not commit this new file
-    - cp backend\.env.example backend\.env
+    - cp \backend\.env.example \backend\.env
         - Do not commit this new file
     - "import bcrypt; print(bcrypt.hashpw(b'password123', bcrypt.gensalt()).decode())" | Out-File -Encoding utf8 -FilePath hash.py
     - docker run --rm -v "${PWD}:/scripts" python:3.12-alpine sh -c "pip install bcrypt -q && python3 /scripts/hash.py"
