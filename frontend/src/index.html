@@ -633,9 +633,13 @@ async function openClient(id) {
   if (!currentClient) return;
 
   try {
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${currentUser.access_token}`,
+    };
     const [notesRes, goalsRes] = await Promise.all([
-      fetch(`${API_BASE}/clients/${id}/notes`, { credentials: 'include' }),
-      fetch(`${API_BASE}/clients/${id}/plan/goals`, { credentials: 'include' }),
+      fetch(`${API_BASE}/clients/${id}/notes`, { headers, credentials: 'include' }),
+      fetch(`${API_BASE}/clients/${id}/plan/goals`, { headers, credentials: 'include' }),
     ]);
     currentClient.notes = notesRes.ok ? await notesRes.json() : [];
     goals = goalsRes.ok ? await goalsRes.json() : [];
@@ -716,7 +720,7 @@ async function createClient(dest) {
   try {
     const res = await fetch(`${API_BASE}/clients`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${currentUser.access_token}` },
       credentials: 'include',
       body: JSON.stringify({ counselor_id: currentUser.id, first_name: fn, last_name: ln, dob }),
     });
