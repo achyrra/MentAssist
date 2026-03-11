@@ -1,5 +1,5 @@
 -- DEV ONLY SEED DATA
-INSERT INTO users (id, email, password_hash, role) VALUES
+INSERT INTO users (id, email, password_hash, role, first_name, last_name) VALUES
   (1, 'counselor1@mentassist.com', '$2b$12$kXlwBb//4OTjXXKDn6RZxuoEIC0D80/dWYEvOQk.oGref32UKRAhu', 'counselor', 'Counselor', 'One'), 
   (2, 'counselor2@mentassist.com', '$2b$12$kXlwBb//4OTjXXKDn6RZxuoEIC0D80/dWYEvOQk.oGref32UKRAhu', 'counselor', 'Counselor', 'Two')
 ON CONFLICT DO NOTHING;
