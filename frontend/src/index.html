@@ -718,7 +718,7 @@ async function createClient(dest) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ first_name: fn, last_name: ln, dob }),
+      body: JSON.stringify({ counselor_id: currentUser.id, first_name: fn, last_name: ln, dob }),
     });
     if (!res.ok) throw new Error();
     const newC = await res.json();
