@@ -21,3 +21,6 @@ Please see "SETUP_DB.md" for instructions on setting up the database.
 6. Login:
     - Email: counselor1@mentassist.com
     - Password: password123
+7. Generate a hash for your backend/.env file via the following command in powershell:
+    - python -c "import secrets; print(secrets.token_hex(32))"
+    - Copy the output and paste as SECRET_KEY=<generated_value>
