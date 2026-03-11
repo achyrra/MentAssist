@@ -3,7 +3,12 @@ from sqlalchemy import text
 from app.db.session import engine
 from app.api.v1.router import router as v1_router
 
-app = FastAPI(title="MentAssist API")
+app = FastAPI(
+    title="MentAssist API",
+    docs_url="/api/v1/docs",
+    openapi_url="/api/v1/openapi.json",
+    redoc_url="/api/v1/redoc",
+)
 
 @app.get("/health")
 def health():

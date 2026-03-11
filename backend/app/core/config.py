@@ -11,6 +11,7 @@ class Settings:
     APP_DB_HOST: str = os.getenv("APP_DB_HOST", "localhost")
     APP_DB_PORT: str = os.getenv("APP_DB_PORT", "5432")
     POSTGRES_DB: str = os.getenv("POSTGRES_DB", "")
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "")
 
     def validate(self):
         if not self.DATABASE_URL:
