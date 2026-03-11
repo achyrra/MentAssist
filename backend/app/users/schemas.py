@@ -7,6 +7,8 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     role: str = "counselor"
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
 
 
 class UserOut(BaseModel):
@@ -15,6 +17,8 @@ class UserOut(BaseModel):
     role: str
     status: str
     created_at: datetime
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
 
     class Config:
         from_attributes = True
