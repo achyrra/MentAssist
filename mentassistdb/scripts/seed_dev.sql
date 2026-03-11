@@ -9,3 +9,7 @@ INSERT INTO clients (id, counselor_id, first_name, last_name, dob) VALUES
   (2, 2, 'Daniel', 'Reyes',   '1985-11-22'),
   (3, 2, 'Priya',  'Nair',    '1998-07-09')
 ON CONFLICT DO NOTHING;
+
+-- Reset sequences so auto-generated IDs start after seeded data
+SELECT setval('users_id_seq', (SELECT MAX(id) FROM users));
+SELECT setval('clients_id_seq', (SELECT MAX(id) FROM clients));
