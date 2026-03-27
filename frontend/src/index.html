@@ -1,5 +1,7 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -421,6 +423,7 @@
         <p id="plan-client-subtitle">Develop goals, objectives, and attached media.</p>
       </div>
       <button class="btn-secondary" onclick="savePlan()">Save Plan</button>
+      <button onclick="exportTreatmentPlanPDF()" class="btn-secondary">Export PDF</button>
     </div>
     <div style="display:grid;grid-template-columns:2fr 1fr;gap:24px;">
       <div>
@@ -455,6 +458,8 @@
 <script>
 // ===== CONFIG =====
 const API_BASE = window.ENV?.API_URL ?? '/api/v1';
+
+
 
 // ===== STATE =====
 let currentUser   = null;  // { id, first_name, last_name, email, role } from API
@@ -874,7 +879,84 @@ function togglePassword() {
     btn.textContent = 'Show';
   }
 }
+
+async function exportTreatmentPlanPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  let y = 10;
+
+  // Debug visible on page (NOT console)
+  document.body.insertAdjacentHTML(
+    "afterbegin",
+    "<div style='position:fixed;top:0;left:0;background:red;color:white;z-index:9999;padding:5px;'>PDF EXPORT FIRED</div>"
+  );
+
+  // Title
+  doc.setFontSize(16);
+  doc.text("Treatment Plan", 10, y);
+  y += 10;
+
+  // Client name
+  const clientName = currentClient
+    ? `${currentClient.first_name} ${currentClient.last_name}`
+    : "Unknown Client";
+
+  doc.setFontSize(12);
+  doc.text(`Client: ${clientName}`, 10, y);
+  y += 10;
+
+  // Goals
+  doc.setFontSize(14);
+  doc.text("Goals", 10, y);
+  y += 8;
+
+  doc.setFontSize(11);
+
+  if (!goals || goals.length === 0) {
+    doc.text("No goals added.", 10, y);
+    y += 8;
+  } else {
+    goals.forEach((g, i) => {
+      const text = `${i + 1}. ${g.title}${g.description ? " - " + g.description : ""}`;
+      const lines = doc.splitTextToSize(text, 180);
+      doc.text(lines, 10, y);
+      y += lines.length * 6;
+    });
+  }
+
+  y += 5;
+
+  // Media
+  doc.setFontSize(14);
+  doc.text("Attached Media", 10, y);
+  y += 8;
+
+  doc.setFontSize(11);
+
+  if (!planMedia || planMedia.length === 0) {
+    doc.text("No media attached.", 10, y);
+    y += 8;
+  } else {
+    planMedia.forEach((m, i) => {
+      const name = m.name || m.title || "Untitled";
+      doc.text(`${i + 1}. ${name}`, 10, y);
+      y += 6;
+    });
+  }
+
+  doc.save("treatment-plan.pdf");
+}
+
+
 </script>
 </body>
 </html>
 
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script src="script.js"></script>
+</body>
+</html>
