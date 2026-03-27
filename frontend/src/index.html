@@ -229,13 +229,6 @@
         <h3>Media Manager</h3>
         <p>Upload and organize therapeutic resources and media.</p>
       </div>
-      <div class="action-card" onclick="nav('treatment-plan')">
-        <div class="action-icon icon-rose">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-        </div>
-        <h3>Treatment Plans</h3>
-        <p>Develop and manage treatment plans for clients.</p>
-      </div>
     </div>
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
@@ -293,7 +286,8 @@
     </div>
   </nav>
   <div class="content">
-    <button class="back-link" onclick="nav('client-list')">← Back to Clients</button>
+    <button class="back-link" onclick="nav('home')">← Home </button>
+    <button class="back-link" onclick="nav('client-list')">\ Back to Clients</button>
     <div class="detail-header">
       <div class="detail-avatar" id="detail-avatar">—</div>
       <div class="detail-info">
@@ -416,7 +410,8 @@
     </div>
   </nav>
   <div class="content">
-    <button class="back-link" onclick="nav('client-detail')">← Back to Client</button>
+    <button class="back-link" onclick="nav('home')">← Home </button>
+    <button class="back-link" onclick="nav('client-detail')">\ Back to Client</button>
     <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-end;">
       <div>
         <h2>Treatment Plan Workspace</h2>
@@ -500,6 +495,8 @@ function nav(page) {
   if (page === 'client-list')      renderClientList();
   if (page === 'resource-library') renderResources();
   if (page === 'treatment-plan')   renderTreatmentPlan();
+
+  sessionStorage.setItem('currentPage', page)
 }
 
 // ===== UPDATE NAV BADGES & GREETING =====
@@ -510,6 +507,23 @@ function updateAllBadges() {
   document.querySelectorAll('[id^="nav-username"]').forEach(el => el.textContent = fullName);
   document.querySelectorAll('[id^="nav-role-badge"]').forEach(el => el.textContent = roleLabel);
 }
+
+// ===== SESSION PERSISTENCE =====
+window.addEventListener('load', function() {
+  const isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
+  
+  if (isAuthenticated) {
+    const userData = sessionStorage.getItem('currentUser');
+    if (userData) {
+      currentUser = JSON.parse(userData);
+      loadInitialData();
+      
+      // Restore the page they were on
+      const lastPage = sessionStorage.getItem('currentPage') || 'home';
+      nav(lastPage);
+    }
+  }
+});
 
 // ===== LOGIN =====
 async function doLogin() {
@@ -547,6 +561,11 @@ async function doLogin() {
       ...data.user,
       access_token: data.access_token,
     };
+
+    // Store with consistent key name
+    sessionStorage.setItem('isAuthenticated', 'true');
+    sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+
     await loadInitialData();
     nav('home');
 
@@ -560,6 +579,9 @@ async function doLogin() {
 }
 
 function logout() {
+  sessionStorage.removeItem('isAuthenticated');
+  sessionStorage.removeItem('currentUser');
+  sessionStorage.removeItem('currentPage');  // Add this line
   fetch(`${API_BASE}/users/logout`, { method: 'POST', credentials: 'include' }).catch(() => {});
   currentUser = null;
   clients = []; resources = []; goals = []; planMedia = [];
@@ -579,7 +601,7 @@ async function loadInitialData() {
   };
   try {
     const cRes = await fetch(`${API_BASE}/clients`, { headers, credentials: 'include' });
-    if (!cRes.ok) throw new Error('Clients fetch failed: ${cRes.status}');
+    if (!cRes.ok) throw new Error(`Clients fetch failed: ${cRes.status}`);
     clients = await cRes.json();
   } catch (err) {
     console.error(err);
