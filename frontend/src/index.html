@@ -172,11 +172,17 @@
         <label>Email Address</label>
         <input type="email" placeholder="you@example.com" id="login-email"/>
       </div>
-      <div class="field">
-        <label>Password</label>
-        <input type="password" placeholder="••••••••" id="login-password"
-               onkeydown="if(event.key==='Enter') doLogin()"/>
-      </div>
+      <div class="field" style="position: relative;">
+  <label>Password</label>
+  <input type="password" placeholder="••••••••" id="login-password"
+         onkeydown="if(event.key==='Enter') doLogin()"
+         style="padding-right: 60px;"/>
+
+  <button type="button" onclick="togglePassword(this)"
+          style="position:absolute; right:10px; top:38px; border:none; background:none; cursor:pointer; font-size:0.8rem; color:#6B6B6B;">
+    Show
+  </button>
+</div>
       <button class="btn-primary" id="login-btn" onclick="doLogin()">Sign In</button>
     </div>
   </div>
@@ -853,6 +859,22 @@ function attachMedia() {
     showToast(`"${res.title}" attached`);
   }
 }
+
+
+
+function togglePassword() {
+  const input = document.getElementById('login-password');
+  const btn = event.target;
+
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = 'Hide';
+  } else {
+    input.type = 'password';
+    btn.textContent = 'Show';
+  }
+}
 </script>
 </body>
 </html>
+
