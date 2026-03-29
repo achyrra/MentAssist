@@ -17,7 +17,8 @@
   }
 
   body { font-family: 'DM Sans', sans-serif; background: var(--warm-white); color: var(--charcoal); min-height: 100vh; overflow-x: hidden; }
-
+  .loading { visibility: hidden; }
+  
   .page { display: none; min-height: 100vh; animation: fadeIn 0.4s ease; }
   .page.active { display: flex; flex-direction: column; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
@@ -39,11 +40,13 @@
   .field label { display: block; font-size: 0.8rem; font-weight: 500; color: var(--mid); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 8px; }
   .field input { width: 100%; padding: 12px 16px; border: 1.5px solid var(--divider); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.9375rem; color: var(--charcoal); background: var(--warm-white); transition: border-color 0.2s, box-shadow 0.2s; outline: none; }
   .field input:focus { border-color: var(--sage); box-shadow: 0 0 0 3px rgba(122,155,138,0.15); }
+  .field button { right: auto; top: auto; transform: none; border: none; background: none; color: var(--mid)}
+  .field-wrapper { display: flex; justify-content: space-between; align-items: center;}
   .btn-primary { width: 100%; padding: 14px; background: var(--sage); color: white; border: none; border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 0.9375rem; font-weight: 500; cursor: pointer; transition: background 0.2s, transform 0.15s, box-shadow 0.2s; margin-top: 8px; }
   .btn-primary:hover { background: var(--sage-dark); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(78,115,97,0.3); }
   .btn-primary:active { transform: translateY(0); }
   .btn-primary:disabled { background: var(--light); cursor: not-allowed; transform: none; box-shadow: none; }
-
+  
   /* NAV */
   .topnav { background: white; border-bottom: 1px solid var(--divider); padding: 0 32px; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
   .nav-brand { display: flex; align-items: center; gap: 10px; font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 500; color: var(--charcoal); cursor: pointer; }
@@ -105,6 +108,8 @@
   textarea.field-input { width: 100%; min-height: 100px; padding: 12px 16px; border: 1.5px solid var(--divider); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--charcoal); background: var(--warm-white); resize: vertical; outline: none; transition: border-color 0.2s; margin-bottom: 12px; }
   textarea.field-input:focus { border-color: var(--sage); }
   .readonly-input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--divider); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; background: var(--cream); color: var(--charcoal); outline: none; }
+  .readonly-input[readonly] { cursor: default; user-select: text; background: var(--cream); border-color: var(--divider); color: var(--charcoal); pointer-events: none; }
+  .readonly-input[readonly]:focus { box-shadow: none; border-color: var(--divider); }
 
   /* FORMS */
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -123,7 +128,18 @@
   .resource-card h4 { font-size: 0.9375rem; font-weight: 500; margin-bottom: 8px; }
   .resource-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
   .resource-tag { padding: 3px 10px; border-radius: 12px; background: var(--cream); color: var(--mid); font-size: 0.75rem; }
-
+  .resource-card .rc-actions { display:none; gap:6px; margin-top:12px; }
+  .resource-card:hover .rc-actions { display:flex; }
+  .rc-preview-area { margin-top:12px; border-top:1px solid var(--divider); padding-top:12px; display:none; }
+  .rc-preview-area.open { display:block; }
+  .rc-preview-area iframe,
+  .rc-preview-area img { width:100%; border-radius:8px; border:1px solid var(--divider); }
+  .rc-preview-area iframe { height:260px; }
+  .upload-drop-zone { border:2px dashed var(--divider); border-radius:12px; padding:28px 20px; text-align:center; cursor:pointer; transition:all 0.2s; background:var(--warm-white); }
+  .upload-drop-zone:hover, .upload-drop-zone.drag-over { border-color:var(--sage); background:rgba(122,155,138,0.05); }
+  .upload-drop-zone p { font-size:0.875rem; color:var(--mid); margin-bottom:8px; }
+  .upload-drop-zone span { font-size:0.75rem; color:var(--light); }
+  
   /* TREATMENT PLAN */
   .goal-list { list-style: none; }
   .goal-item { padding: 16px 20px; border: 1px solid var(--divider); border-radius: 12px; margin-bottom: 10px; background: white; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
@@ -150,9 +166,35 @@
     .quick-actions { grid-template-columns: 1fr 1fr; }
     .topnav { padding: 0 16px; }
   }
+
+  /* TREATMENT NEEDS */
+.need-card { border:1px solid var(--divider); border-radius:14px; margin-bottom:14px; background:white; overflow:hidden; }
+.need-card-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; cursor:pointer; transition:background 0.2s; }
+.need-card-header:hover { background:var(--cream); }
+.need-card-header-left { display:flex; align-items:center; gap:12px; }
+.need-badge { width:26px; height:26px; border-radius:50%; background:var(--sage); color:white; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:600; flex-shrink:0; }
+.need-card-title { font-family:'Cormorant Garamond',serif; font-size:1.05rem; font-weight:500; }
+.need-card-body { display:none; padding:0 20px 20px; border-top:1px solid var(--divider); }
+.need-card-body.open { display:block; animation:fadeIn 0.2s ease; }
+.need-section-label { font-size:0.72rem; font-weight:600; color:var(--mid); text-transform:uppercase; letter-spacing:0.07em; margin:14px 0 6px; }
+.need-goal-text { font-size:0.875rem; line-height:1.65; color:var(--charcoal); background:var(--warm-white); padding:10px 14px; border-radius:8px; }
+.need-obj-item { display:flex; gap:8px; align-items:flex-start; margin-bottom:6px; }
+.need-obj-num { width:20px; height:20px; border-radius:50%; background:var(--sage-light); color:var(--sage-dark); display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:700; flex-shrink:0; margin-top:2px; }
+.need-obj-text { font-size:0.875rem; line-height:1.6; color:var(--charcoal); }
+.need-intv-item { display:flex; gap:8px; align-items:flex-start; margin-bottom:6px; }
+.need-intv-dot { width:6px; height:6px; border-radius:50%; background:var(--sage); flex-shrink:0; margin-top:7px; }
+.dynamic-field { display:flex; gap:8px; margin-bottom:8px; }
+.dynamic-field textarea { flex:1; padding:8px 12px; border:1.5px solid var(--divider); border-radius:8px; font-family:'DM Sans',sans-serif; font-size:0.875rem; color:var(--charcoal); background:white; outline:none; resize:vertical; min-height:38px; transition:border-color 0.2s; }
+.dynamic-field textarea:focus { border-color:var(--sage); }
+.btn-remove-field { width:28px; height:28px; border-radius:6px; border:none; background:var(--cream); color:var(--light); cursor:pointer; font-size:1rem; flex-shrink:0; margin-top:4px; transition:all 0.2s; }
+.btn-remove-field:hover { background:rgba(192,87,74,0.1); color:var(--error); }
+
+/* EDITABLE INPUT */
+.editable-input { width:100%; padding:10px 14px; border:1.5px solid var(--sage-light); border-radius:10px; font-family:'DM Sans',sans-serif; font-size:0.9rem; background:white; color:var(--charcoal); outline:none; transition:border-color 0.2s; }
+.editable-input:focus { border-color:var(--sage); box-shadow:0 0 0 3px rgba(122,155,138,0.15); }
 </style>
 </head>
-<body>
+<body class="loading">
 
 <div class="toast" id="toast"></div>
 
@@ -174,17 +216,12 @@
         <label>Email Address</label>
         <input type="email" placeholder="you@example.com" id="login-email"/>
       </div>
-      <div class="field" style="position: relative;">
-  <label>Password</label>
-  <input type="password" placeholder="••••••••" id="login-password"
-         onkeydown="if(event.key==='Enter') doLogin()"
-         style="padding-right: 60px;"/>
-
-  <button type="button" onclick="togglePassword(this)"
-          style="position:absolute; right:10px; top:38px; border:none; background:none; cursor:pointer; font-size:0.8rem; color:#6B6B6B;">
-    Show
-  </button>
-</div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" placeholder="••••••••" id="login-password"
+          onkeydown="if(event.key==='Enter') doLogin()"/>
+        <button type="button" id="togglePassword">Show Password</button>
+      </div>
       <button class="btn-primary" id="login-btn" onclick="doLogin()">Sign In</button>
     </div>
   </div>
@@ -213,7 +250,7 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         </div>
         <h3>Client List</h3>
-        <p>View and manage all existing clients in your practice.</p>
+        <p>View and manage all of your clients' information.</p>
       </div>
       <div class="action-card" onclick="nav('intake-form')">
         <div class="action-icon icon-sand">
@@ -310,6 +347,14 @@
     </div>
     <div class="tab-content" id="tab-info">
       <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:400;">Client Information</h3>
+          <div style="display:flex;gap:8px;">
+            <button id="edit-info-btn" class="btn-secondary" onclick="toggleClientEdit(true)">Edit</button>
+            <button id="save-info-btn" class="btn-primary" style="display:none;width:auto;padding:10px 20px;margin-top:0;" onclick="saveClientInfo()">Save Changes</button>
+            <button id="cancel-info-btn" class="btn-secondary" style="display:none;" onclick="toggleClientEdit(false)">Cancel</button>
+          </div>
+        </div>
         <div class="form-grid">
           <div class="field">
             <label>First Name</label>
@@ -319,13 +364,29 @@
             <label>Last Name</label>
             <input class="readonly-input" type="text" id="detail-lname" readonly>
           </div>
+        <div class="field">
+          <label>Date of Birth</label>
+          <input class="readonly-input" type="date" id="detail-dob2" readonly>
+        </div>
           <div class="field">
-            <label>Date of Birth</label>
-            <input class="readonly-input" type="text" id="detail-dob2" readonly>
+            <label>Age</label>
+            <input class="readonly-input" type="text" id="detail-age" readonly>
           </div>
           <div class="field">
             <label>Added</label>
             <input class="readonly-input" type="text" id="detail-created" readonly>
+          </div>
+          <div class="field full">
+            <label>Primary Diagnosis</label>
+            <input class="readonly-input" type="text" id="detail-diagnosis" readonly placeholder="—">
+          </div>
+          <div class="field full">
+            <label>Primary Concerns</label>
+            <textarea class="readonly-input" id="detail-concerns" readonly style="min-height:60px;resize:none;"></textarea>
+          </div>
+          <div class="field full">
+            <label>Therapy Focus</label>
+            <input class="readonly-input" type="text" id="detail-therapy-focus" readonly placeholder="—">
           </div>
         </div>
       </div>
@@ -345,7 +406,8 @@
     </div>
   </nav>
   <div class="content">
-    <button class="back-link" onclick="nav('client-list')">← Back to Clients</button>
+    <button class="back-link" onclick="nav('home')">← Back to Home</button>
+    <button class="back-link" onclick="nav('client-list')">\ Back to Clients</button>
     <div class="page-header">
       <h2>New Client Intake</h2>
       <p>Fill in the details below to register a new client.</p>
@@ -363,6 +425,18 @@
         <div class="field full">
           <label>Date of Birth</label>
           <input type="date" id="new-dob"/>
+        </div>
+        <div class="field full">
+          <label>Primary Diagnosis</label>
+          <input type="text" id="new-diagnosis" placeholder="e.g. Adjustment Disorder"/>
+        </div>
+        <div class="field full">
+          <label>Primary Concerns</label>
+          <textarea class="field-input" id="new-concerns" placeholder="e.g. Difficulty expressing needs, managing emotions…" style="min-height:60px;margin-bottom:0;"></textarea>
+        </div>
+        <div class="field full">
+          <label>Therapy Focus</label>
+          <input type="text" id="new-therapy-focus" placeholder="e.g. Communication skills, emotional regulation"/>
         </div>
       </div>
       <div style="display:flex;gap:12px;margin-top:8px;">
@@ -410,40 +484,119 @@
     </div>
   </nav>
   <div class="content">
-    <button class="back-link" onclick="nav('home')">← Home </button>
-    <button class="back-link" onclick="nav('client-detail')">\ Back to Client</button>
+    <button class="back-link" onclick="nav('home')">← Home</button>
+    <button class="back-link" onclick="nav('client-detail')"> \ Back to Client</button>
     <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-end;">
       <div>
         <h2>Treatment Plan Workspace</h2>
         <p id="plan-client-subtitle">Develop goals, objectives, and attached media.</p>
       </div>
-      <button class="btn-secondary" onclick="savePlan()">Save Plan</button>
-      <button onclick="exportTreatmentPlanPDF()" class="btn-secondary">Export PDF</button>
+      <div style="display:flex;gap:10px;">
+        <button class="btn-secondary" onclick="savePlan()">Save Plan</button>
+        <button class="btn-secondary" onclick="exportPlan()">Export Plan</button>
+      </div>
     </div>
-    <div style="display:grid;grid-template-columns:2fr 1fr;gap:24px;">
+
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:24px;align-items:start;">
       <div>
-        <div class="card" style="margin-bottom:20px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-            <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:400;">Goals & Objectives</h3>
-            <button class="btn-secondary" onclick="addGoal()" style="font-size:0.8125rem;padding:7px 14px;">+ Add Goal</button>
+        <!-- Existing needs list -->
+        <div id="needs-list"></div>
+
+        <!-- Add new need form -->
+        <div class="card" id="add-need-card" style="border:1.5px dashed var(--divider);box-shadow:none;background:var(--warm-white);">
+          <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="toggleAddNeed()">
+            <span style="font-size:0.9rem;color:var(--mid);">+ Add Treatment Need</span>
+            <span id="add-need-chevron" style="color:var(--mid);font-size:0.8rem;">▼</span>
           </div>
-          <ul class="goal-list" id="goals-list"></ul>
-        </div>
-        <div class="card">
-          <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:400;margin-bottom:14px;">Attached Media</h3>
-          <div class="plan-media" id="plan-media-list"></div>
-          <button class="btn-secondary" style="font-size:0.8125rem;padding:7px 14px;margin-top:14px;" onclick="attachMedia()">+ Attach from Library</button>
+          <div id="add-need-form" style="display:none;margin-top:20px;">
+            <div class="field">
+              <label>Treatment Need</label>
+              <input type="text" id="new-need-title" placeholder="e.g. Emotional Regulation"/>
+            </div>
+            <div class="field">
+              <label>Treatment Goal</label>
+              <textarea class="field-input" id="new-need-goal" placeholder="Within X weeks, the client will…" style="min-height:70px;margin-bottom:0;"></textarea>
+            </div>
+
+            <div style="margin-top:16px;">
+              <label style="display:block;font-size:0.8rem;font-weight:500;color:var(--mid);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">Short-Term Objectives</label>
+              <div id="new-objectives-list"></div>
+              <button class="btn-secondary" style="font-size:0.8125rem;padding:6px 14px;margin-top:6px;" onclick="addObjectiveField()">+ Add Objective</button>
+            </div>
+
+            <div style="margin-top:16px;">
+              <label style="display:block;font-size:0.8rem;font-weight:500;color:var(--mid);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">Interventions</label>
+              <div id="new-interventions-list"></div>
+              <button class="btn-secondary" style="font-size:0.8125rem;padding:6px 14px;margin-top:6px;" onclick="addInterventionField()">+ Add Intervention</button>
+            </div>
+
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
+              <button class="btn-secondary" onclick="toggleAddNeed()">Cancel</button>
+              <button class="btn-primary" style="width:auto;padding:10px 24px;margin-top:0;" onclick="saveNewNeed()">Add Need</button>
+            </div>
+          </div>
         </div>
       </div>
+
+      <!-- Sidebar -->
       <div class="card" style="height:fit-content;">
         <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:400;margin-bottom:14px;">Plan Overview</h3>
         <div style="font-size:0.875rem;color:var(--mid);line-height:1.9;">
           <p>Client: <strong style="color:var(--charcoal);" id="ps-name">—</strong></p>
-          <p>Goals: <strong style="color:var(--charcoal);" id="ps-goals">0</strong></p>
+          <p>Treatment Needs: <strong style="color:var(--charcoal);" id="ps-goals">0</strong></p>
           <p>Attached Media: <strong style="color:var(--charcoal);" id="ps-media">0</strong></p>
+        </div>
+        <div style="margin-top:20px;">
+          <h4 style="font-size:0.8rem;font-weight:500;color:var(--mid);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Attached Media</h4>
+          <div class="plan-media" id="plan-media-list"></div>
+          <button class="btn-secondary" style="font-size:0.8125rem;padding:6px 14px;margin-top:10px;width:100%;" onclick="attachMedia()">+ Attach from Library</button>
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- UPLOAD MODAL -->
+<div id="modal-upload" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:500;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:20px;padding:36px;width:100%;max-width:520px;position:relative;max-height:90vh;overflow-y:auto;">
+    <button onclick="closeUploadModal()" style="position:absolute;top:16px;right:16px;border:none;background:var(--cream);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:1rem;">✕</button>
+    <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:400;margin-bottom:6px;">Upload Resource</h3>
+    <p style="font-size:0.875rem;color:var(--mid);margin-bottom:24px;">Add a file to the library with a title and tags.</p>
+
+    <!-- Drop zone -->
+    <div class="upload-drop-zone" id="upload-drop-zone" onclick="document.getElementById('upload-file').click()">
+      <p id="drop-zone-label">Drop a file here, or click to browse</p>
+      <span id="drop-zone-filename">PDF, images, or any document</span>
+    </div>
+    <input type="file" id="upload-file" style="display:none;" accept="*/*" onchange="handleFileSelect(this)"/>
+
+    <div class="field" style="margin-top:20px;"><label>Title</label><input type="text" id="upload-title" placeholder="e.g. Breathing Exercise Guide"/></div>
+    <div class="field">
+      <label>Type</label>
+      <select id="upload-type" style="width:100%;padding:12px 16px;border:1.5px solid var(--divider);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.9375rem;outline:none;background:var(--warm-white);">
+        <option>PDF</option><option>Worksheet</option><option>Guide</option><option>Image</option><option>Video</option><option>Other</option>
+      </select>
+    </div>
+    <div class="field"><label>Tags (comma separated)</label><input type="text" id="upload-tags" placeholder="e.g. anxiety, grounding"/></div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
+      <button class="btn-secondary" onclick="closeUploadModal()">Cancel</button>
+      <button class="btn-primary" style="width:auto;padding:10px 24px;margin-top:0;" onclick="saveUploadedResource()">Save to Library</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXPORT PREVIEW MODAL -->
+<div id="modal-export" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:600;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:20px;width:90%;max-width:780px;max-height:90vh;display:flex;flex-direction:column;position:relative;overflow:hidden;">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 28px;border-bottom:1px solid var(--divider);flex-shrink:0;">
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:400;">Treatment Plan Preview</h3>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <button class="btn-primary" style="width:auto;padding:9px 22px;margin-top:0;" onclick="downloadPlanPDF()">⬇ Download PDF</button>
+        <button onclick="closeExportModal()" style="border:none;background:var(--cream);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:1rem;">✕</button>
+      </div>
+    </div>
+    <div id="export-preview-body" style="overflow-y:auto;padding:32px 40px;flex:1;"></div>
   </div>
 </div>
 
@@ -457,12 +610,12 @@ const API_BASE = window.ENV?.API_URL ?? '/api/v1';
 
 
 // ===== STATE =====
-let currentUser   = null;  // { id, first_name, last_name, email, role } from API
+let currentUser = null;  // { id, first_name, last_name, email, role } from API
 let currentClient = null;
-let clients   = [];
+let clients = [];
 let resources = [];
-let goals     = [];
 let planMedia = [];
+let clientPlans = {};
 
 // ===== UTILS =====
 function greeting() {
@@ -486,6 +639,24 @@ function showToast(msg) {
   toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
 }
 
+document.getElementById('modal-upload').addEventListener('click', function(e) {
+  if (e.target === this) closeUploadModal();
+});
+
+document.getElementById('modal-export').addEventListener('click', function(e) {
+  if (e.target === this) closeExportModal();
+});
+
+function togglePassword() {
+  const passwordInput = document.getElementById('login-password');
+  const toggleButton = document.getElementById('togglePassword');
+  const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+  passwordInput.setAttribute('type', type);
+  toggleButton.textContent = type === 'password' ? 'Show Password' : 'Hide Password';
+}
+
+document.getElementById('togglePassword').addEventListener('click', togglePassword);
+
 // ===== NAVIGATION =====
 function nav(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -503,34 +674,44 @@ function nav(page) {
 function updateAllBadges() {
   if (!currentUser) return;
   const roleLabel = cap(currentUser.role);
-  const fullName  = `${currentUser.first_name} ${currentUser.last_name}`;
+  const fullName = `${currentUser.first_name} ${currentUser.last_name}`;
   document.querySelectorAll('[id^="nav-username"]').forEach(el => el.textContent = fullName);
   document.querySelectorAll('[id^="nav-role-badge"]').forEach(el => el.textContent = roleLabel);
 }
 
 // ===== SESSION PERSISTENCE =====
 window.addEventListener('load', function() {
+  document.body.classList.remove('loading');
   const isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
   
   if (isAuthenticated) {
     const userData = sessionStorage.getItem('currentUser');
     if (userData) {
+      document.getElementById('page-login').classList.remove('active');
       currentUser = JSON.parse(userData);
-      loadInitialData();
-      
-      // Restore the page they were on
-      const lastPage = sessionStorage.getItem('currentPage') || 'home';
-      nav(lastPage);
+
+      loadInitialData().then(() => {
+        const lastPage = sessionStorage.getItem('currentPage') || 'home';
+        const clientPages = ['client-detail', 'treatment-plan'];
+        if (clientPages.includes(lastPage)) {
+          const savedId = sessionStorage.getItem('currentClientId');
+          if (savedId) {
+            openClient(Number(savedId));
+            return;
+          }
+        }
+        nav(lastPage);
+      });
     }
   }
 });
 
 // ===== LOGIN =====
 async function doLogin() {
-  const email    = document.getElementById('login-email').value.trim();
+  const email = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-password').value;
-  const errEl    = document.getElementById('login-error');
-  const btn      = document.getElementById('login-btn');
+  const errEl = document.getElementById('login-error');
+  const btn = document.getElementById('login-btn');
 
   errEl.style.display = 'none';
   if (!email || !password) {
@@ -581,11 +762,17 @@ async function doLogin() {
 function logout() {
   sessionStorage.removeItem('isAuthenticated');
   sessionStorage.removeItem('currentUser');
-  sessionStorage.removeItem('currentPage');  // Add this line
+  sessionStorage.removeItem('currentPage');
+  sessionStorage.removeItem('mentassist_resources');
+  sessionStorage.removeItem('currentClientId');
+  sessionStorage.removeItem('currentClientTab');
+  Object.keys(sessionStorage)
+    .filter(k => k.startsWith('mentassist_notes_'))
+    .forEach(k => sessionStorage.removeItem(k));
   fetch(`${API_BASE}/users/logout`, { method: 'POST', credentials: 'include' }).catch(() => {});
   currentUser = null;
-  clients = []; resources = []; goals = []; planMedia = [];
-  document.getElementById('login-email').value    = '';
+  clients = []; resources = []; treatmentNeeds = []; planMedia = []; clientPlans = {};
+  document.getElementById('login-email').value = '';
   document.getElementById('login-password').value = '';
   document.getElementById('login-error').style.display = 'none';
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -602,13 +789,34 @@ async function loadInitialData() {
   try {
     const cRes = await fetch(`${API_BASE}/clients`, { headers, credentials: 'include' });
     if (!cRes.ok) throw new Error(`Clients fetch failed: ${cRes.status}`);
-    clients = await cRes.json();
+    const apiClients = await cRes.json();
+
+    // Merge API clients with any locally-saved field overrides
+    const cached = loadClientsFromSession() || [];
+    clients = apiClients.map(apiClient => {
+      const local = cached.find(c => c.id === apiClient.id);
+      if (!local) return apiClient;
+      // Keep API data as base, but layer locally-saved fields on top
+      // for fields the API doesn't return yet
+      return {
+        ...apiClient,
+        primary_diagnosis: apiClient.primary_diagnosis ?? local.primary_diagnosis,
+        primary_concerns:  apiClient.primary_concerns  ?? local.primary_concerns,
+        therapy_focus:     apiClient.therapy_focus     ?? local.therapy_focus,
+      };
+    });
+
+    saveClientsToSession(clients);
   } catch (err) {
     console.error(err);
-    showToast('Could not load clients');
+    const cached = loadClientsFromSession();
+    if (cached) {
+      clients = cached;
+    } else {
+      showToast('Could not load clients');
+    }
   }
-  // Resources endpoint not yet implemented -- skipping for now
-  resources = [];
+  loadResourcesFromSession();
 }
 
 // ===== HOME =====
@@ -638,7 +846,7 @@ function renderHome() {
 
 // ===== CLIENT LIST =====
 function renderClientList(filter = '') {
-  const tbody    = document.getElementById('client-list-tbody');
+  const tbody = document.getElementById('client-list-tbody');
   const filtered = clients.filter(c =>
     `${c.first_name} ${c.last_name}`.toLowerCase().includes(filter.toLowerCase())
   );
@@ -665,41 +873,53 @@ async function openClient(id) {
   currentClient = clients.find(c => c.id === id);
   if (!currentClient) return;
 
+  sessionStorage.setItem('currentClientId', id);
+
+  const saved = clientPlans[id];
+  treatmentNeeds = saved?.needs ?? [];
+  planMedia = saved?.media ?? [];
+
   try {
     const headers = {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${currentUser.access_token}`,
     };
-    const [notesRes, goalsRes] = await Promise.all([
+    const [notesRes, planRes] = await Promise.all([
       fetch(`${API_BASE}/clients/${id}/notes`, { headers, credentials: 'include' }),
-      fetch(`${API_BASE}/clients/${id}/plan/goals`, { headers, credentials: 'include' }),
+      fetch(`${API_BASE}/clients/${id}/plan`,  { headers, credentials: 'include' }),
     ]);
-    currentClient.notes = notesRes.ok ? await notesRes.json() : [];
-    goals = goalsRes.ok ? await goalsRes.json() : [];
+  const apiNotes = notesRes.ok ? await notesRes.json() : [];
+  const localNotes = loadNotesFromSession(id);
+  // Merge: prefer API notes if available, otherwise use local
+  currentClient.notes = apiNotes.length ? apiNotes : localNotes; if (planRes.ok) {
+      const plan = await planRes.json();
+      treatmentNeeds = plan.needs ?? [];
+      planMedia = plan.media ?? [];
+    }
   } catch {
     currentClient.notes = [];
-    goals = [];
   }
 
-  document.getElementById('detail-avatar').textContent  = currentClient.first_name[0] + currentClient.last_name[0];
-  document.getElementById('detail-name').textContent    = `${currentClient.first_name} ${currentClient.last_name}`;
-  document.getElementById('detail-dob').textContent     = `DOB: ${formatDate(currentClient.dob)}`;
-  document.getElementById('detail-fname').value         = currentClient.first_name;
-  document.getElementById('detail-lname').value         = currentClient.last_name;
-  document.getElementById('detail-dob2').value          = formatDate(currentClient.dob);
-  document.getElementById('detail-created').value       = currentClient.created_at ? formatDate(currentClient.created_at.slice(0,10)) : '—';
-  document.getElementById('ps-name').textContent        = `${currentClient.first_name} ${currentClient.last_name}`;
-  document.getElementById('plan-client-subtitle').textContent =
-    `Developing goals and resources for ${currentClient.first_name} ${currentClient.last_name}.`;
+  document.getElementById('detail-avatar').textContent = currentClient.first_name[0] + currentClient.last_name[0];
+  document.getElementById('detail-name').textContent = `${currentClient.first_name} ${currentClient.last_name}`;
+  document.getElementById('detail-dob').textContent = `DOB: ${formatDate(currentClient.dob)}`;
+  document.getElementById('ps-name').textContent = `${currentClient.first_name} ${currentClient.last_name}`;
+  document.getElementById('plan-client-subtitle').textContent = `Developing goals and resources for ${currentClient.first_name} ${currentClient.last_name}.`;
+
+  populateClientInfoTab(false);
 
   renderSessionNotes();
 
-  // reset tabs
+  // Remember tab
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  document.querySelector('.tab-btn').classList.add('active');
-  document.getElementById('tab-notes').classList.add('active');
 
+  const savedTab = sessionStorage.getItem('currentClientTab') || 'notes';
+  const tabBtn = [...document.querySelectorAll('.tab-btn')]
+    .find(b => b.getAttribute('onclick')?.includes(`'${savedTab}'`));
+  if (tabBtn) tabBtn.classList.add('active');
+  else document.querySelector('.tab-btn').classList.add('active');
+  document.getElementById('tab-' + savedTab)?.classList.add('active');
   nav('client-detail');
 }
 
@@ -719,22 +939,34 @@ function renderSessionNotes() {
 
 async function addNote() {
   const input = document.getElementById('new-note-input');
-  const text  = input.value.trim();
+  const text = input.value.trim();
   if (!text || !currentClient) return;
   try {
     const res = await fetch(`${API_BASE}/clients/${currentClient.id}/notes`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${currentUser.access_token}` },
       credentials: 'include',
       body: JSON.stringify({ content: text }),
     });
     if (!res.ok) throw new Error();
     const saved = await res.json();
     currentClient.notes.unshift(saved);
+    saveNotesToSession(currentClient.id, currentClient.notes); // ADD THIS
     input.value = '';
     renderSessionNotes();
     showToast('Session note saved');
-  } catch { showToast('Failed to save note'); }
+  } catch {
+    const localNote = {
+      id: Date.now(),
+      content: text,
+      created_at: new Date().toISOString(),
+    };
+    currentClient.notes.unshift(localNote);
+    saveNotesToSession(currentClient.id, currentClient.notes); // ADD THIS
+    input.value = '';
+    renderSessionNotes();
+    showToast('Note saved locally');
+  }
 }
 
 function switchTab(name, btn) {
@@ -742,145 +974,635 @@ function switchTab(name, btn) {
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('tab-' + name).classList.add('active');
+  sessionStorage.setItem('currentClientTab', name); // ADD THIS
 }
 
 // ===== INTAKE FORM =====
 async function createClient(dest) {
-  const fn  = document.getElementById('new-fname').value.trim();
-  const ln  = document.getElementById('new-lname').value.trim();
+  const fn = document.getElementById('new-fname').value.trim();
+  const ln = document.getElementById('new-lname').value.trim();
   const dob = document.getElementById('new-dob').value;
-  if (!fn || !ln || !dob) { showToast('Please fill all fields'); return; }
+  if (!fn || !ln || !dob) { showToast('Please fill all required fields'); return; }
   try {
     const res = await fetch(`${API_BASE}/clients`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${currentUser.access_token}` },
       credentials: 'include',
-      body: JSON.stringify({ counselor_id: currentUser.id, first_name: fn, last_name: ln, dob }),
+      body: JSON.stringify({
+        counselor_id:      currentUser.id,
+        first_name:        fn,
+        last_name:         ln,
+        dob,
+        primary_diagnosis: document.getElementById('new-diagnosis').value.trim()      || null,
+        primary_concerns:  document.getElementById('new-concerns').value.trim()       || null,
+        therapy_focus:     document.getElementById('new-therapy-focus').value.trim()  || null,
+      }),
     });
     if (!res.ok) throw new Error();
     const newC = await res.json();
     clients.push(newC);
-    document.getElementById('new-fname').value = '';
-    document.getElementById('new-lname').value = '';
-    document.getElementById('new-dob').value   = '';
+    ['new-fname','new-lname','new-dob','new-diagnosis','new-concerns','new-therapy-focus']
+      .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
     showToast(`${fn} ${ln} added successfully`);
     if (dest === 'home') nav('home');
     else openClient(newC.id);
   } catch { showToast('Failed to create client'); }
 }
 
+function calcAge(dob) {
+  if (!dob) return null;
+  return Math.floor((new Date() - new Date(dob + 'T00:00:00')) / (365.25 * 24 * 60 * 60 * 1000));
+}
+
+function populateClientInfoTab(editMode) {
+  const c = currentClient;
+  const age = calcAge(c.dob);
+
+  const setField = (id, value, isTextarea = false) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.value = value || '';
+    if (editMode) {
+      el.className = 'editable-input';
+      el.readOnly = false;
+      if (isTextarea) el.style.resize = 'vertical';
+    } else {
+      el.className = 'readonly-input';
+      el.readOnly = true;
+      if (isTextarea) el.style.resize = 'none';
+    }
+  };
+
+  setField('detail-fname', c.first_name);
+  setField('detail-lname', c.last_name);
+  setField('detail-dob2', c.dob);
+  setField('detail-age', age !== null ? `${age} years old` : '—');
+  setField('detail-created', c.created_at ? formatDate(c.created_at.slice(0,10)) : '—');
+  setField('detail-diagnosis', c.primary_diagnosis);
+  setField('detail-concerns', c.primary_concerns, true);
+  setField('detail-therapy-focus', c.therapy_focus);
+
+  // Age is always readonly
+  const ageEl = document.getElementById('detail-age');
+  if (ageEl) {
+    ageEl.value = age !== null ? `${age} years old` : '—';
+    ageEl.className = 'readonly-input';
+    ageEl.readOnly = true;
+  }
+
+  // Added is always readonly
+  const createdEl = document.getElementById('detail-created');
+  if (createdEl) { createdEl.className = 'readonly-input'; createdEl.readOnly = true; }
+
+  document.getElementById('edit-info-btn').style.display = editMode ? 'none' : '';
+  document.getElementById('save-info-btn').style.display = editMode ? '' : 'none';
+  document.getElementById('cancel-info-btn').style.display = editMode ? '' : 'none';
+}
+
+function toggleClientEdit(on) {
+  populateClientInfoTab(on);
+}
+
+async function saveClientInfo() {
+  const fn = document.getElementById('detail-fname').value.trim();
+  const ln = document.getElementById('detail-lname').value.trim();
+  const dob = document.getElementById('detail-dob2').value || currentClient.dob;
+  const diagnosis = document.getElementById('detail-diagnosis').value.trim()     || null;
+  const concerns = document.getElementById('detail-concerns').value.trim()      || null;
+  const focus = document.getElementById('detail-therapy-focus').value.trim() || null;
+
+  if (!fn || !ln) { showToast('Name is required'); return; }
+
+  // Update in-memory state immediately — before any async
+  currentClient.first_name = fn;
+  currentClient.last_name = ln;
+  currentClient.dob = dob;
+  currentClient.primary_diagnosis = diagnosis;
+  currentClient.primary_concerns = concerns;
+  currentClient.therapy_focus = focus;
+
+  // Sync into the clients array
+  const idx = clients.findIndex(c => c.id === currentClient.id);
+  if (idx > -1) clients[idx] = {
+    ...clients[idx],
+    first_name:        fn,
+    last_name:         ln,
+    dob:               dob,
+    primary_diagnosis: diagnosis,
+    primary_concerns:  concerns,
+    therapy_focus:     focus,
+  };
+  currentClient = clients[idx];
+
+  // Persist both to sessionStorage immediately
+  saveClientsToSession(clients);
+  sessionStorage.setItem('currentClientId', String(currentClient.id));
+
+  // Refresh UI
+  document.getElementById('detail-name').textContent = `${fn} ${ln}`;
+  document.getElementById('detail-avatar').textContent = fn[0] + ln[0];
+  populateClientInfoTab(false);
+  showToast('Client information saved');
+
+  // Sync to backend silently
+  try {
+    const res = await fetch(`${API_BASE}/clients/${currentClient.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${currentUser.access_token}` },
+      credentials: 'include',
+      body: JSON.stringify(currentClient),
+    });
+    if (res.ok) {
+      const saved = await res.json();
+      Object.assign(currentClient, saved);
+      if (idx > -1) clients[idx] = { ...clients[idx], ...saved };
+      saveClientsToSession(clients);
+    }
+  } catch { /* backend not ready */ }
+}
+
+// ===== NOTE PERSISTENCE =====
+function loadNotesFromSession(clientId) {
+  try {
+    const raw = sessionStorage.getItem(`mentassist_notes_${clientId}`);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function saveNotesToSession(clientId, notes) {
+  try {
+    sessionStorage.setItem(`mentassist_notes_${clientId}`, JSON.stringify(notes));
+  } catch {
+    // sessionStorage quota reached
+    showToast('Storage limit reached. Try removing some files.');
+  }
+}
+
+// ===== CLIENT INFO PERSISTENCE =====
+function saveClientsToSession(clientsArray) {
+  try {
+    sessionStorage.setItem('mentassist_clients', JSON.stringify(clientsArray));
+  } catch { 
+    // sessionStorage quota reached
+    showToast('Storage limit reached. Try removing some files.');
+  }
+}
+
+function loadClientsFromSession() {
+  try {
+    const raw = sessionStorage.getItem('mentassist_clients');
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+// ===== RESOURCE PERSISTENCE =====
+function loadResourcesFromSession() {
+  try {
+    const raw = sessionStorage.getItem('mentassist_resources');
+    resources = raw ? JSON.parse(raw) : [];
+  } catch { resources = []; }
+}
+
+function saveResourcesToSession() {
+  try {
+    sessionStorage.setItem('mentassist_resources', JSON.stringify(resources));
+  } catch (e) {
+    // sessionStorage quota reached
+    showToast('Storage limit reached. Try smaller files.');
+  }
+}
+
 // ===== RESOURCES =====
 let activeTag = null;
+
 function renderResources() {
+  loadResourcesFromSession();
+
   const allTags = [...new Set(resources.flatMap(r => r.tags ?? []))];
   document.getElementById('tag-filter-row').innerHTML =
     `<button class="tag ${!activeTag ? 'active' : ''}" onclick="filterByTag(null,this)">All</button>` +
-    allTags.map(t => `<button class="tag ${activeTag===t?'active':''}" onclick="filterByTag('${t}',this)">${t}</button>`).join('');
+    allTags.map(t =>
+      `<button class="tag ${activeTag === t ? 'active' : ''}" onclick="filterByTag('${t}',this)">${t}</button>`
+    ).join('');
 
-  const filtered = activeTag ? resources.filter(r => (r.tags??[]).includes(activeTag)) : resources;
+  const filtered = activeTag ? resources.filter(r => (r.tags ?? []).includes(activeTag)) : resources;
   const grid = document.getElementById('resource-grid');
-  if (!filtered.length) { grid.innerHTML = '<p class="empty-state">No resources found.</p>'; return; }
-  grid.innerHTML = filtered.map(r => `
-    <div class="resource-card">
-      <div class="resource-type">${r.type}</div>
-      <h4>${r.title}</h4>
-      <p style="font-size:0.8125rem;color:var(--mid);">Click to preview or attach to a treatment plan.</p>
-      <div class="resource-tags">${(r.tags??[]).map(t=>`<span class="resource-tag">${t}</span>`).join('')}</div>
-    </div>
-  `).join('');
+
+  if (!filtered.length) {
+    grid.innerHTML = `
+      <div style="grid-column:1/-1;text-align:center;padding:48px 24px;color:var(--light);">
+        <div style="font-size:2rem;margin-bottom:12px;">📂</div>
+        <p style="font-size:0.9rem;">No resources yet. Upload one to get started.</p>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(r => {
+    const isImage = r.mimeType?.startsWith('image/');
+    const isPDF = r.mimeType === 'application/pdf';
+    const canPreviewInline = isImage || isPDF;
+
+    return `
+      <div class="resource-card" id="rc-${r.id}">
+        <div class="resource-type">${r.type}</div>
+        <h4>${r.title}</h4>
+        <p style="font-size:0.8125rem;color:var(--mid);">${r.fileName || 'No file attached'}</p>
+        <div class="resource-tags">${(r.tags ?? []).map(t => `<span class="resource-tag">${t}</span>`).join('')}</div>
+        <div class="rc-actions">
+          ${canPreviewInline
+            ? `<button class="btn-secondary" style="font-size:0.8rem;padding:6px 12px;" onclick="toggleResourcePreview('${r.id}')">Preview</button>`
+            : ''}
+          ${r.dataUrl
+            ? `<button class="btn-secondary" style="font-size:0.8rem;padding:6px 12px;" onclick="downloadResource('${r.id}')">Download</button>`
+            : ''}
+          <button class="btn-icon" style="margin-left:auto;" onclick="deleteResource('${r.id}')" title="Remove">×</button>
+        </div>
+        ${canPreviewInline
+          ? `<div class="rc-preview-area" id="preview-${r.id}">
+              ${isImage
+                ? `<img src="${r.dataUrl}" alt="${r.title}" style="max-height:200px;object-fit:contain;"/>`
+                : `<iframe src="${r.dataUrl}" title="${r.title}"></iframe>`}
+             </div>`
+          : ''}
+      </div>`;
+  }).join('');
 }
+
+function toggleResourcePreview(id) {
+  const el = document.getElementById(`preview-${id}`);
+  if (!el) return;
+  el.classList.toggle('open');
+}
+
+function downloadResource(id) {
+  const r = resources.find(x => x.id === id);
+  if (!r || !r.dataUrl) return;
+  const a = document.createElement('a');
+  a.href = r.dataUrl;
+  a.download = r.fileName || r.title;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function deleteResource(id) {
+  resources = resources.filter(r => r.id !== id);
+  saveResourcesToSession();
+  renderResources();
+  showToast('Resource removed');
+}
+
 function filterByTag(tag, btn) {
   activeTag = tag;
   document.querySelectorAll('#tag-filter-row .tag').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   renderResources();
 }
-function showUploadModal() { showToast('Upload dialog coming soon'); }
+
+// ===== UPLOAD MODAL =====
+let _pendingFile = null; // { name, mimeType, dataUrl }
+
+function handleFileSelect(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    _pendingFile = { name: file.name, mimeType: file.type, dataUrl: e.target.result };
+    document.getElementById('drop-zone-label').textContent = '✓ File ready';
+    document.getElementById('drop-zone-filename').textContent = file.name;
+    document.getElementById('drop-zone-label').style.color = 'var(--sage-dark)';
+    // Auto-fill title if empty
+    if (!document.getElementById('upload-title').value) {
+      document.getElementById('upload-title').value = file.name.replace(/\.[^.]+$/, '');
+    }
+    // Auto-select type
+    if (file.type.startsWith('image/'))          document.getElementById('upload-type').value = 'Image';
+    else if (file.type === 'application/pdf')    document.getElementById('upload-type').value = 'PDF';
+  };
+  reader.readAsDataURL(file);
+}
+
+function showUploadModal() {
+  _pendingFile = null;
+  document.getElementById('upload-title').value = '';
+  document.getElementById('upload-tags').value = '';
+  document.getElementById('upload-file').value = '';
+  document.getElementById('upload-type').value = 'PDF';
+  document.getElementById('drop-zone-label').textContent = 'Drop a file here, or click to browse';
+  document.getElementById('drop-zone-label').style.color = '';
+  document.getElementById('drop-zone-filename').textContent = 'PDF, images, or any document';
+  document.getElementById('modal-upload').style.display = 'flex';
+
+  // Drag-and-drop wiring
+  const zone = document.getElementById('upload-drop-zone');
+  zone.ondragover = e => { e.preventDefault(); zone.classList.add('drag-over'); };
+  zone.ondragleave = () => zone.classList.remove('drag-over');
+  zone.ondrop = e => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    const input = document.getElementById('upload-file');
+    input.files = dt.files;
+    handleFileSelect(input);
+  };
+}
+
+function closeUploadModal() {
+  document.getElementById('modal-upload').style.display = 'none';
+  _pendingFile = null;
+}
+
+function saveUploadedResource() {
+  const title = document.getElementById('upload-title').value.trim();
+  if (!title) { showToast('Please enter a title'); return; }
+  if (!_pendingFile) { showToast('Please select a file'); return; }
+
+  const tags = document.getElementById('upload-tags').value
+    .split(',').map(t => t.trim()).filter(Boolean);
+  const type = document.getElementById('upload-type').value;
+
+  loadResourcesFromSession();
+  resources.push({
+    id:       Date.now().toString(),
+    title,
+    type,
+    tags,
+    fileName: _pendingFile.name,
+    mimeType: _pendingFile.mimeType,
+    dataUrl:  _pendingFile.dataUrl,
+  });
+  saveResourcesToSession();
+  closeUploadModal();
+  renderResources();
+  showToast(`"${title}" added to library`);
+}
 
 // ===== TREATMENT PLAN =====
+let treatmentNeeds = []; // [{ id, title, goal, objectives:[], interventions:[], expanded }]
+
 function renderTreatmentPlan() {
-  const list = document.getElementById('goals-list');
-  if (!goals.length) {
-    list.innerHTML = '<p class="empty-state" style="padding:8px 0;">No goals yet. Add one above.</p>';
+  const container = document.getElementById('needs-list');
+  if (!treatmentNeeds.length) {
+    container.innerHTML = '<p class="empty-state" style="margin-bottom:16px;">No treatment needs yet. Add one below.</p>';
   } else {
-    list.innerHTML = goals.map(g => `
-      <li class="goal-item">
-        <div class="goal-check ${g.done?'done':''}" onclick="toggleGoal(${g.id})"></div>
-        <div class="goal-text">
-          <strong>${g.title}</strong>
-          <span>${g.description || ''}</span>
+    container.innerHTML = treatmentNeeds.map((n, i) => `
+      <div class="need-card" id="need-card-${n.id}">
+        <div class="need-card-header" onclick="toggleNeed(${n.id})">
+          <div class="need-card-header-left">
+            <div class="need-badge">${i + 1}</div>
+            <span class="need-card-title">${n.title}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:0.75rem;color:var(--light);">${n.objectives.length} obj · ${n.interventions.length} intv</span>
+            <span style="color:var(--mid);font-size:0.8rem;">${n.expanded ? '▲' : '▼'}</span>
+            <button class="btn-icon" style="flex-shrink:0;" onclick="event.stopPropagation();removeNeed(${n.id})" title="Remove">×</button>
+          </div>
         </div>
-        <button class="btn-icon" onclick="removeGoal(${g.id})" title="Remove">×</button>
-      </li>
-    `).join('');
+        <div class="need-card-body ${n.expanded ? 'open' : ''}" id="need-body-${n.id}">
+          <div class="need-section-label">Treatment Goal</div>
+          <div class="need-goal-text">${n.goal || '<em style="color:var(--light)">No goal set</em>'}</div>
+
+          ${n.objectives.length ? `
+            <div class="need-section-label">Short-Term Objectives</div>
+            ${n.objectives.map((o, oi) => `
+              <div class="need-obj-item">
+                <div class="need-obj-num">${oi + 1}</div>
+                <div class="need-obj-text">${o}</div>
+              </div>`).join('')}` : ''}
+
+          ${n.interventions.length ? `
+            <div class="need-section-label">Interventions</div>
+            ${n.interventions.map(iv => `
+              <div class="need-intv-item">
+                <div class="need-intv-dot"></div>
+                <div class="need-obj-text">${iv}</div>
+              </div>`).join('')}` : ''}
+        </div>
+      </div>`).join('');
   }
+  document.getElementById('ps-goals').textContent = treatmentNeeds.length;
   document.getElementById('plan-media-list').innerHTML =
     planMedia.map(m => `<div class="media-chip">📄 ${m.name || m.title}</div>`).join('');
-  document.getElementById('ps-goals').textContent = goals.length;
   document.getElementById('ps-media').textContent = planMedia.length;
 }
 
-async function toggleGoal(id) {
-  const g = goals.find(x => x.id === id);
-  if (!g) return;
-  g.done = !g.done;
-  try {
-    await fetch(`${API_BASE}/goals/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ done: g.done }),
-    });
-  } catch { /* optimistic — UI already updated */ }
+function toggleNeed(id) {
+  const need = treatmentNeeds.find(n => n.id === id);
+  if (!need) return;
+  need.expanded = !need.expanded;
   renderTreatmentPlan();
 }
 
-async function removeGoal(id) {
-  try {
-    const res = await fetch(`${API_BASE}/goals/${id}`, { method: 'DELETE', credentials: 'include' });
-    if (!res.ok) throw new Error();
-  } catch { showToast('Failed to remove goal'); return; }
-  goals = goals.filter(x => x.id !== id);
+function removeNeed(id) {
+  treatmentNeeds = treatmentNeeds.filter(n => n.id !== id);
   renderTreatmentPlan();
-  showToast('Goal removed');
+  showToast('Treatment need removed');
 }
 
-async function addGoal() {
-  const title = prompt('Goal title:');
-  if (!title) return;
-  const desc = prompt('Objective / description:') || '';
-  try {
-    const res = await fetch(`${API_BASE}/clients/${currentClient?.id}/plan/goals`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ title, description: desc }),
-    });
-    if (!res.ok) throw new Error();
-    goals.push(await res.json());
-  } catch {
-    goals.push({ id: Date.now(), title, description: desc, done: false });
+// ── Add need form ──
+let addNeedOpen = false;
+
+function toggleAddNeed() {
+  addNeedOpen = !addNeedOpen;
+  document.getElementById('add-need-form').style.display = addNeedOpen ? 'block' : 'none';
+  document.getElementById('add-need-chevron').textContent = addNeedOpen ? '▲' : '▼';
+  if (addNeedOpen) {
+    // seed with one objective and one intervention field
+    document.getElementById('new-objectives-list').innerHTML = '';
+    document.getElementById('new-interventions-list').innerHTML = '';
+    document.getElementById('new-need-title').value = '';
+    document.getElementById('new-need-goal').value = '';
+    addObjectiveField();
+    addInterventionField();
+    setTimeout(() => document.getElementById('new-need-title').focus(), 50);
   }
+}
+
+function addObjectiveField() {
+  const wrap = document.getElementById('new-objectives-list');
+  const div = document.createElement('div');
+  div.className = 'dynamic-field';
+  div.innerHTML = `<textarea placeholder="Measurable objective…"></textarea><button class="btn-remove-field" onclick="this.parentElement.remove()">×</button>`;
+  wrap.appendChild(div);
+}
+
+function addInterventionField() {
+  const wrap = document.getElementById('new-interventions-list');
+  const div = document.createElement('div');
+  div.className = 'dynamic-field';
+  div.innerHTML = `<textarea placeholder="Intervention strategy…"></textarea><button class="btn-remove-field" onclick="this.parentElement.remove()">×</button>`;
+  wrap.appendChild(div);
+}
+
+function saveNewNeed() {
+  const title = document.getElementById('new-need-title').value.trim();
+  if (!title) { showToast('Please enter a treatment need title'); return; }
+  const goal = document.getElementById('new-need-goal').value.trim();
+  const objectives = [...document.querySelectorAll('#new-objectives-list textarea')]
+    .map(t => t.value.trim()).filter(Boolean);
+  const interventions = [...document.querySelectorAll('#new-interventions-list textarea')]
+    .map(t => t.value.trim()).filter(Boolean);
+
+  treatmentNeeds.push({ id: Date.now(), title, goal, objectives, interventions, expanded: true });
+  toggleAddNeed();
   renderTreatmentPlan();
+  showToast(`"${title}" added`);
 }
 
 async function savePlan() {
+  // Always save locally first
+  if (currentClient?.id) {
+    clientPlans[currentClient.id] = { needs: treatmentNeeds, media: planMedia };
+  }
+
   try {
     const res = await fetch(`${API_BASE}/clients/${currentClient?.id}/plan`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${currentUser.access_token}` },
       credentials: 'include',
-      body: JSON.stringify({ goals, media: planMedia }),
+      body: JSON.stringify({ needs: treatmentNeeds, media: planMedia }),
     });
     if (!res.ok) throw new Error();
-    showToast('Plan saved successfully');
-  } catch { showToast('Failed to save plan'); }
+  } catch { /* backend not ready, silently continue */ }
+
+  showToast('Plan saved');
+}
+
+async function exportPlan() {
+  // Try backend first
+  if (currentClient?.id) {
+    try {
+      const res = await fetch(`${API_BASE}/clients/${currentClient.id}/plan/export`, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${currentUser?.access_token}` },
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const blob = await res.blob();
+        window._exportBlob = blob;
+        window._exportFilename = `${currentClient.first_name}-${currentClient.last_name}-treatment-plan.pdf`;
+        const url = window.URL.createObjectURL(blob);
+        document.getElementById('export-preview-body').innerHTML =
+          `<iframe src="${url}" style="width:100%;height:62vh;border:none;border-radius:8px;"></iframe>`;
+        document.getElementById('modal-export').style.display = 'flex';
+        return;
+      }
+    } catch {}
+  }
+
+  // Client-side fallback: render HTML preview
+  window._exportBlob = null;
+  const clientName = `${currentClient?.first_name || ''} ${currentClient?.last_name || ''}`.trim() || 'Client';
+  const today = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+
+  const needsHtml = treatmentNeeds.map((need, i) => `
+    <div style="margin-bottom:28px;page-break-inside:avoid;">
+      <div style="background:#F5F0E8;border-left:4px solid #4E7361;padding:10px 16px;margin-bottom:12px;">
+        <span style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#4E7361;">Treatment Need ${i+1}</span>
+        <div style="font-size:1.05rem;font-weight:700;color:#2C2C2C;margin-top:2px;">${need.title}</div>
+      </div>
+
+      ${need.goal ? `
+        <div style="margin-bottom:12px;">
+          <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#6B6B6B;margin-bottom:4px;">Treatment Goal</div>
+          <div style="font-size:0.875rem;line-height:1.7;color:#2C2C2C;padding:10px 14px;background:#FAF8F4;border-radius:6px;">${need.goal}</div>
+        </div>` : ''}
+
+      ${need.objectives?.length ? `
+        <div style="margin-bottom:12px;">
+          <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#6B6B6B;margin-bottom:6px;">Short-Term Objectives</div>
+          ${need.objectives.map((o, oi) => `
+            <div style="display:flex;gap:10px;margin-bottom:5px;align-items:flex-start;">
+              <span style="font-size:0.75rem;font-weight:700;color:#4E7361;min-width:18px;margin-top:1px;">${oi+1}.</span>
+              <span style="font-size:0.875rem;line-height:1.6;color:#2C2C2C;">${o}</span>
+            </div>`).join('')}
+        </div>` : ''}
+
+      ${need.interventions?.length ? `
+        <div>
+          <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#6B6B6B;margin-bottom:6px;">Interventions</div>
+          ${need.interventions.map(iv => `
+            <div style="display:flex;gap:10px;margin-bottom:5px;align-items:flex-start;">
+              <span style="color:#7A9B8A;font-size:0.9rem;margin-top:1px;">•</span>
+              <span style="font-size:0.875rem;line-height:1.6;color:#2C2C2C;">${iv}</span>
+            </div>`).join('')}
+        </div>` : ''}
+    </div>`).join('<hr style="border:none;border-top:1px solid #E0D8CC;margin:24px 0;">');
+
+  const age = calcAge(currentClient?.dob);
+
+const headerHtml = `
+  <div style="border-bottom:2px solid #4E7361;padding-bottom:20px;margin-bottom:28px;">
+    <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#7A9B8A;margin-bottom:6px;">MentAssist · Treatment Plan</div>
+    <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#4E7361;margin-bottom:8px;border-bottom:1px solid #E0D8CC;padding-bottom:4px;">Client Information</div>
+    <table style="font-size:0.875rem;line-height:1.9;color:#2C2C2C;width:100%;border-collapse:collapse;">
+      <tr><td style="color:#6B6B6B;width:160px;vertical-align:top;">Name</td><td>${clientName}</td></tr>
+      ${age !== null ? `<tr><td style="color:#6B6B6B;vertical-align:top;">Age</td><td>${age} years old</td></tr>` : ''}
+      ${currentClient?.primary_diagnosis ? `<tr><td style="color:#6B6B6B;vertical-align:top;">Primary Diagnosis</td><td>${currentClient.primary_diagnosis}</td></tr>` : ''}
+      ${currentClient?.primary_concerns  ? `<tr><td style="color:#6B6B6B;vertical-align:top;">Primary Concerns</td><td>${currentClient.primary_concerns}</td></tr>`  : ''}
+      ${currentClient?.therapy_focus     ? `<tr><td style="color:#6B6B6B;vertical-align:top;">Therapy Focus</td><td>${currentClient.therapy_focus}</td></tr>`          : ''}
+    </table>
+    <div style="font-size:0.75rem;color:#A0A0A0;margin-top:12px;">Generated: ${today} &nbsp;·&nbsp; ${treatmentNeeds.length} Treatment Need${treatmentNeeds.length !== 1 ? 's' : ''}</div>
+  </div>`;
+
+const html = `
+  <div style="font-family:'DM Sans',Georgia,sans-serif;color:#2C2C2C;max-width:680px;margin:0 auto;">
+    ${headerHtml}
+    ${needsHtml || '<p style="color:#A0A0A0;font-size:0.9rem;">No treatment needs have been added.</p>'}
+    <div style="margin-top:36px;padding-top:14px;border-top:1px solid #E0D8CC;font-size:0.72rem;color:#A0A0A0;display:flex;justify-content:space-between;">
+      <span>Prepared by: ${currentUser?.first_name || ''} ${currentUser?.last_name || ''}</span>
+      <span>MentAssist Therapy Platform · Confidential</span>
+    </div>
+  </div>`;
+
+document.getElementById('export-preview-body').innerHTML = html;
+document.getElementById('modal-export').style.display = 'flex';
+}
+
+function closeExportModal() {
+  document.getElementById('modal-export').style.display = 'none';
+  if (window._exportBlob) {
+    window._exportBlob = null;
+  }
+}
+
+function downloadPlanPDF() {
+  // If we have a real PDF blob from backend, download it directly
+  if (window._exportBlob) {
+    const url = window.URL.createObjectURL(window._exportBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = window._exportFilename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    return;
+  }
+
+  // Otherwise use browser print-to-PDF
+  const content = document.getElementById('export-preview-body').innerHTML;
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head>
+    <title>Treatment Plan — ${currentClient?.first_name} ${currentClient?.last_name}</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+      body { font-family: 'DM Sans', Georgia, sans-serif; padding: 40px 48px; color: #2C2C2C; max-width: 780px; margin: 0 auto; }
+      @media print { @page { margin: 1.5cm 2cm; } }
+    </style>
+  </head><body>${content}</body></html>`);
+  win.document.close();
+  win.focus();
+  setTimeout(() => { win.print(); }, 400);
 }
 
 function attachMedia() {
   if (!resources.length) { showToast('No resources available'); return; }
   const res = resources[Math.floor(Math.random() * resources.length)];
-  if (!planMedia.find(m => (m.name||m.title) === res.title)) {
+  if (!planMedia.find(m => (m.name || m.title) === res.title)) {
     planMedia.push({ name: res.title, icon: '📄' });
     renderTreatmentPlan();
     showToast(`"${res.title}" attached`);

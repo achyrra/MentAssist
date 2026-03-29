@@ -1,7 +1,7 @@
 -- DEV ONLY SEED DATA
 INSERT INTO users (id, email, password_hash, role, first_name, last_name) VALUES
-  (1, 'counselor1@mentassist.com', '$2b$12$DsHGz90jge2jmcz/NlK0Qe0o91RZS2LTgHlSgVnxiDbiUoSq6JWD2', 'counselor', 'Counselor', 'One'), 
-  (2, 'counselor2@mentassist.com', '$2b$12$DsHGz90jge2jmcz/NlK0Qe0o91RZS2LTgHlSgVnxiDbiUoSq6JWD2', 'counselor', 'Counselor', 'Two')
+  (1, 'counselor1@mentassist.com', '$replaceWithRealHash', 'counselor', 'Counselor', 'One'), 
+  (2, 'counselor2@mentassist.com', '$replaceWithRealHash', 'counselor', 'Counselor', 'Two')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO clients (id, counselor_id, first_name, last_name, dob) VALUES
