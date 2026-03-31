@@ -1,4 +1,3 @@
-@'
 BEGIN;
 
 -- users (counselor, admin)
@@ -45,7 +44,10 @@ CREATE TABLE treatment_plans (
   id SERIAL PRIMARY KEY,
   client_id INT NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
   version INT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','final','archived')),
+  status TEXT NOT NULL DEFAULT 'draft'
+    CHECK (status IN ('draft','final','archived')),
+  needs JSONB NOT NULL DEFAULT '[]',
+  media JSONB NOT NULL DEFAULT '[]',
   created_by INT REFERENCES users(id),
   created_at TIMESTAMPTZ DEFAULT now(),
   UNIQUE (client_id, version)
@@ -116,4 +118,3 @@ CREATE TABLE audit_log (
 CREATE INDEX idx_audit_user_time ON audit_log(user_id, ts);
 
 COMMIT;
-'@ | Set-Content -Path mentassistdb/db/schema.sql -Encoding UTF8

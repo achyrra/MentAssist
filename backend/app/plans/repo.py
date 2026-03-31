@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import text
+import json
 
 
 # Treatment Plans
@@ -17,15 +18,26 @@ def create_plan(db: Session, data: dict):
 
 def get_plan(db: Session, plan_id: int):
     q = text("""
-        SELECT id, client_id, version, status, created_by, created_at
+        SELECT id, client_id, version, status, needs, media, created_by, created_at
         FROM treatment_plans WHERE id = :id
     """)
     return db.execute(q, {"id": plan_id}).mappings().first()
 
 
+def get_plan_by_client(db: Session, client_id: int):
+    q = text("""
+        SELECT id, client_id, version, status, needs, media, created_by, created_at
+        FROM treatment_plans
+        WHERE client_id = :client_id
+        ORDER BY version DESC
+        LIMIT 1
+    """)
+    return db.execute(q, {"client_id": client_id}).mappings().first()
+
+
 def list_plans_by_client(db: Session, client_id: int):
     q = text("""
-        SELECT id, client_id, version, status, created_by, created_at
+        SELECT id, client_id, version, status, needs, media, created_by, created_at
         FROM treatment_plans WHERE client_id = :client_id
         ORDER BY version DESC
     """)
@@ -53,6 +65,25 @@ def delete_plan(db: Session, plan_id: int):
     r = db.execute(q, {"id": plan_id})
     db.commit()
     return r.scalar() is not None
+
+
+def upsert_plan(db: Session, client_id: int, needs: list, media: list):
+    q = text("""
+        INSERT INTO treatment_plans (client_id, version, status, needs, media)
+        VALUES (:client_id, 1, 'draft', :needs, :media)
+        ON CONFLICT (client_id, version)
+        DO UPDATE SET
+            needs = EXCLUDED.needs,
+            media = EXCLUDED.media
+        RETURNING id, client_id, version, status, needs, media, created_by, created_at
+    """)
+    r = db.execute(q, {
+        "client_id": client_id,
+        "needs": json.dumps(needs),
+        "media": json.dumps(media)
+    })
+    db.commit()
+    return r.mappings().first()
 
 
 # Goals
