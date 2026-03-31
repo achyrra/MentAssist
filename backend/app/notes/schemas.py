@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import Optional
 
@@ -20,6 +20,19 @@ class NoteOut(BaseModel):
     appointment_id: Optional[int]
     note_text: str
     created_by: Optional[int]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ClientNoteCreate(BaseModel):
+    content: str
+
+
+class ClientNoteOut(BaseModel):
+    id: int
+    content: str
     created_at: datetime
 
     class Config:
