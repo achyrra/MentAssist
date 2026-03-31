@@ -4,10 +4,16 @@ INSERT INTO users (id, email, password_hash, role, first_name, last_name) VALUES
   (2, 'counselor2@mentassist.com', '$2b$12$DKj2g5Xh35gE/IKIfFJnLeG1olGh1XUkIky7FzamtwjN3FfbtFxtG', 'counselor', 'Counselor', 'Two')
 ON CONFLICT DO NOTHING;
 
-INSERT INTO clients (id, counselor_id, first_name, last_name, dob) VALUES
-  (1, 2, 'Maya',   'Johnson', '1990-03-14'),
-  (2, 2, 'Daniel', 'Reyes',   '1985-11-22'),
-  (3, 2, 'Priya',  'Nair',    '1998-07-09')
+INSERT INTO clients (counselor_id, first_name, last_name, dob)
+SELECT id, 'Maya', 'Johnson', '1990-03-14' FROM users WHERE email='counselor2@mentassist.com'
+ON CONFLICT DO NOTHING;
+
+INSERT INTO clients (counselor_id, first_name, last_name, dob)
+SELECT id, 'Daniel', 'Reyes', '1985-11-22' FROM users WHERE email='counselor2@mentassist.com'
+ON CONFLICT DO NOTHING;
+
+INSERT INTO clients (counselor_id, first_name, last_name, dob)
+SELECT id, 'Priya', 'Nair', '1998-07-09' FROM users WHERE email='counselor2@mentassist.com'
 ON CONFLICT DO NOTHING;
 
 -- Reset sequences so auto-generated IDs start after seeded data
