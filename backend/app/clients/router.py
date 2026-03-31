@@ -9,18 +9,15 @@ from app.notes.schemas import ClientNoteCreate, ClientNoteOut
 
 router = APIRouter()
 
-
 @router.post("", status_code=201, response_model=ClientOut)
 def create_client(payload: ClientCreate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     return repo.create_client(db, payload.model_dump())
-
 
 @router.get("", response_model=list[ClientOut])
 def list_clients(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     if current_user["role"] == "admin":
         return repo.list_clients(db, counselor_id=None)
     return repo.list_clients(db, counselor_id=current_user["id"])
-
 
 @router.get("/{client_id}", response_model=ClientOut)
 def get_client(client_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
@@ -29,7 +26,6 @@ def get_client(client_id: int, db: Session = Depends(get_db), current_user: dict
         raise HTTPException(status_code=404, detail="Client not found")
     return client
 
-
 @router.put("/{client_id}", response_model=ClientOut)
 def update_client(client_id: int, payload: ClientUpdate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     updated = repo.update_client(db, client_id, payload.model_dump())
@@ -37,6 +33,11 @@ def update_client(client_id: int, payload: ClientUpdate, db: Session = Depends(g
         raise HTTPException(status_code=404, detail="Client not found")
     return updated
 
+@router.delete("/{client_id}", status_code=204)
+def delete_client(client_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
+    deleted = repo.delete_client(db, client_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Client not found")
 
 @router.post("/{client_id}/notes", response_model=ClientNoteOut, status_code=status.HTTP_201_CREATED)
 def create_client_note(client_id: int, payload: ClientNoteCreate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
@@ -50,7 +51,6 @@ def create_client_note(client_id: int, payload: ClientNoteCreate, db: Session = 
         "created_by": current_user["id"]
     })
     return {"id": note["id"], "content": note["note_text"], "created_at": note["created_at"]}
-
 
 @router.get("/{client_id}/notes", response_model=list[ClientNoteOut])
 def list_client_notes(client_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
