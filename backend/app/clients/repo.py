@@ -4,9 +4,9 @@ from sqlalchemy import text
 
 def create_client(db: Session, data: dict):
     q = text("""
-        INSERT INTO clients (counselor_id, first_name, last_name, dob)
-        VALUES (:counselor_id, :first_name, :last_name, :dob)
-        RETURNING id, counselor_id, first_name, last_name, dob, created_at
+        INSERT INTO clients (counselor_id, first_name, last_name, dob, primary_diagnosis, primary_concerns, therapy_focus)
+        VALUES (:counselor_id, :first_name, :last_name, :dob, :primary_diagnosis, :primary_concerns, :therapy_focus)
+        RETURNING id, counselor_id, first_name, last_name, dob, primary_diagnosis, primary_concerns, therapy_focus, created_at
     """)
     r = db.execute(q, data)
     db.commit()
@@ -16,14 +16,14 @@ def create_client(db: Session, data: dict):
 def list_clients(db: Session, counselor_id: int = None):
     if counselor_id is None:
         q = text("""
-            SELECT id, counselor_id, first_name, last_name, dob, created_at
+            SELECT id, counselor_id, first_name, last_name, dob, primary_diagnosis, primary_concerns, therapy_focus, created_at
             FROM clients
             ORDER BY id
         """)
         r = db.execute(q)
     else:
         q = text("""
-            SELECT id, counselor_id, first_name, last_name, dob, created_at
+            SELECT id, counselor_id, first_name, last_name, dob, primary_diagnosis, primary_concerns, therapy_focus, created_at
             FROM clients
             WHERE counselor_id = :counselor_id
             ORDER BY id
@@ -34,7 +34,7 @@ def list_clients(db: Session, counselor_id: int = None):
 
 def get_client(db: Session, client_id: int):
     q = text("""
-        SELECT id, counselor_id, first_name, last_name, dob, created_at
+        SELECT id, counselor_id, first_name, last_name, dob, primary_diagnosis, primary_concerns, therapy_focus, created_at
         FROM clients
         WHERE id = :id
     """)
@@ -47,9 +47,12 @@ def update_client(db: Session, client_id: int, data: dict):
         UPDATE clients
         SET first_name = COALESCE(:first_name, first_name),
             last_name = COALESCE(:last_name, last_name),
-            dob = COALESCE(:dob, dob)
+            dob = COALESCE(:dob, dob),
+            primary_diagnosis = COALESCE(:primary_diagnosis, primary_diagnosis),
+            primary_concerns = COALESCE(:primary_concerns, primary_concerns),
+            therapy_focus = COALESCE(:therapy_focus, therapy_focus)
         WHERE id = :id
-        RETURNING id, counselor_id, first_name, last_name, dob, created_at
+        RETURNING id, counselor_id, first_name, last_name, dob, primary_diagnosis, primary_concerns, therapy_focus, created_at
     """)
     r = db.execute(q, {"id": client_id, **data})
     db.commit()

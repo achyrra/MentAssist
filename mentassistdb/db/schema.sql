@@ -1,3 +1,4 @@
+@'
 BEGIN;
 
 -- users (counselor, admin)
@@ -19,6 +20,9 @@ CREATE TABLE clients (
   first_name TEXT NOT NULL,
   last_name TEXT NOT NULL,
   dob DATE,
+  primary_diagnosis TEXT,
+  primary_concerns TEXT,
+  therapy_focus TEXT,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -112,3 +116,4 @@ CREATE TABLE audit_log (
 CREATE INDEX idx_audit_user_time ON audit_log(user_id, ts);
 
 COMMIT;
+'@ | Set-Content -Path mentassistdb/db/schema.sql -Encoding UTF8

@@ -8,6 +8,9 @@ class ClientCreate(BaseModel):
     first_name: str
     last_name: str
     dob: Optional[date] = None
+    primary_diagnosis: Optional[str] = None
+    primary_concerns: Optional[str] = None
+    therapy_focus: Optional[str] = None
 
     @field_validator("dob")
     @classmethod
@@ -21,6 +24,9 @@ class ClientUpdate(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     dob: Optional[date] = None
+    primary_diagnosis: Optional[str] = None
+    primary_concerns: Optional[str] = None
+    therapy_focus: Optional[str] = None
 
     @field_validator("dob")
     @classmethod
@@ -36,6 +42,9 @@ class ClientOut(BaseModel):
     first_name: str
     last_name: str
     dob: Optional[date]
+    primary_diagnosis: Optional[str]
+    primary_concerns: Optional[str]
+    therapy_focus: Optional[str]
     created_at: datetime
 
     class Config:
