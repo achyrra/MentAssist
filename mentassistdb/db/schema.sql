@@ -117,4 +117,19 @@ CREATE TABLE audit_log (
 
 CREATE INDEX idx_audit_user_time ON audit_log(user_id, ts);
 
+-- resource library
+CREATE TABLE resources (
+  id SERIAL PRIMARY KEY,
+  title TEXT NOT NULL,
+  type TEXT NOT NULL,
+  tags JSONB NOT NULL DEFAULT '[]',
+  file_name TEXT,
+  mime_type TEXT,
+  file_data BYTEA,
+  created_by INT REFERENCES users(id),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX idx_resources_created_by ON resources(created_by);
+
 COMMIT;
