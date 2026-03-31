@@ -15,7 +15,9 @@ def create_client(payload: ClientCreate, db: Session = Depends(get_db), current_
 
 @router.get("", response_model=list[ClientOut])
 def list_clients(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    return repo.list_clients(db)
+    if current_user["role"] == "admin":
+        return repo.list_clients(db, counselor_id=None)
+    return repo.list_clients(db, counselor_id=current_user["id"])
 
 
 @router.get("/{client_id}", response_model=ClientOut)

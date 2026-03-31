@@ -13,13 +13,22 @@ def create_client(db: Session, data: dict):
     return r.mappings().first()
 
 
-def list_clients(db: Session):
-    q = text("""
-        SELECT id, counselor_id, first_name, last_name, dob, created_at
-        FROM clients
-        ORDER BY id
-    """)
-    r = db.execute(q)
+def list_clients(db: Session, counselor_id: int = None):
+    if counselor_id is None:
+        q = text("""
+            SELECT id, counselor_id, first_name, last_name, dob, created_at
+            FROM clients
+            ORDER BY id
+        """)
+        r = db.execute(q)
+    else:
+        q = text("""
+            SELECT id, counselor_id, first_name, last_name, dob, created_at
+            FROM clients
+            WHERE counselor_id = :counselor_id
+            ORDER BY id
+        """)
+        r = db.execute(q, {"counselor_id": counselor_id})
     return r.mappings().all()
 
 
