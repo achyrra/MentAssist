@@ -23,6 +23,11 @@
   .page.active { display: flex; flex-direction: column; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
+  /* REGISTER */
+  #page-register { background: var(--cream); align-items: center; justify-content: center; position: relative; }
+  #page-register::before { content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 70% 60% at 60% 40%, rgba(122,155,138,0.15) 0%, transparent 70%); }
+  
   /* LOGIN */
   #page-login { background: var(--cream); align-items: center; justify-content: center; position: relative; }
   #page-login::before { content: ''; position: absolute; inset: 0; pointer-events: none;
@@ -130,11 +135,10 @@
   .resource-tag { padding: 3px 10px; border-radius: 12px; background: var(--cream); color: var(--mid); font-size: 0.75rem; }
   .resource-card .rc-actions { display:none; gap:6px; margin-top:12px; }
   .resource-card:hover .rc-actions { display:flex; }
-  .rc-preview-area { margin-top:12px; border-top:1px solid var(--divider); padding-top:12px; display:none; }
-  .rc-preview-area.open { display:block; }
-  .rc-preview-area iframe,
-  .rc-preview-area img { width:100%; border-radius:8px; border:1px solid var(--divider); }
-  .rc-preview-area iframe { height:260px; }
+  .rc-preview-area { display:none; margin-top:12px; border-top:1px solid var(--divider); padding-top:12px; }
+  .rc-preview-area.open { display:block; animation:fadeIn 0.2s ease; }
+  .rc-preview-area img { width:100%; max-height:300px; object-fit:contain; border-radius:8px; border:1px solid var(--divider); }
+  .rc-preview-area iframe { width:100%; height:calc(100% * 11 / 8.5); min-height:420px; border:1px solid var(--divider); border-radius:8px; }  .rc-preview-area .preview-placeholder { padding:16px; background:var(--cream); border-radius:8px; font-size:0.8rem; color:var(--mid); text-align:center; }
   .upload-drop-zone { border:2px dashed var(--divider); border-radius:12px; padding:28px 20px; text-align:center; cursor:pointer; transition:all 0.2s; background:var(--warm-white); }
   .upload-drop-zone:hover, .upload-drop-zone.drag-over { border-color:var(--sage); background:rgba(122,155,138,0.05); }
   .upload-drop-zone p { font-size:0.875rem; color:var(--mid); margin-bottom:8px; }
@@ -153,7 +157,7 @@
   .btn-icon { width: 32px; height: 32px; border-radius: 8px; border: none; background: var(--cream); color: var(--mid); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; transition: all 0.2s; flex-shrink: 0; }
   .btn-icon:hover { background: #f0e8dc; color: var(--charcoal); }
   .plan-media { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
-  .media-chip { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; background: var(--cream); border: 1px solid var(--divider); font-size: 0.8125rem; color: var(--mid); cursor: pointer; transition: all 0.2s; }
+  .media-chip { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; background: var(--cream); border: 1px solid var(--divider); font-size: 0.8125rem; color: var(--mid); cursor: pointer; transition: all 0.2s; min-width: 160px; }
   .media-chip:hover { border-color: var(--sage); color: var(--sage-dark); }
 
   /* TOAST */
@@ -167,7 +171,7 @@
     .topnav { padding: 0 16px; }
   }
 
-  /* TREATMENT NEEDS */
+/* TREATMENT NEEDS */
 .need-card { border:1px solid var(--divider); border-radius:14px; margin-bottom:14px; background:white; overflow:hidden; }
 .need-card-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; cursor:pointer; transition:background 0.2s; }
 .need-card-header:hover { background:var(--cream); }
@@ -199,6 +203,35 @@
 <div class="toast" id="toast"></div>
 
 <!-- ============================================================ -->
+<!-- REGISTER PAGE -->
+<!-- ============================================================ -->
+<!-- REGISTER PAGE -->
+<div class="page" id="page-register">
+  <div class="login-container">
+    <div class="login-brand">
+      <div class="logo-mark">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <h1>MentAssist</h1>
+      <p>Create your counselor account</p>
+    </div>
+    <div class="login-card">
+      <p class="login-error" id="register-error"></p>
+      <div class="form-grid" style="margin-bottom:0;">
+        <div class="field"><label>First Name</label><input type="text" id="reg-fname" placeholder="Jane"/></div>
+        <div class="field"><label>Last Name</label><input type="text" id="reg-lname" placeholder="Smith"/></div>
+        <div class="field full"><label>Email Address</label><input type="email" id="reg-email" placeholder="you@example.com"/></div>
+        <div class="field full"><label>Password</label><input type="password" id="reg-password" placeholder="••••••••"/></div>
+      </div>
+      <button class="btn-primary" id="register-btn" onclick="doRegister()">Create Account</button>
+      <p style="text-align:center;margin-top:16px;font-size:0.875rem;color:var(--mid);">
+        Already have an account? <button onclick="nav('login')" style="background:none;border:none;color:var(--sage-dark);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.875rem;text-decoration:underline;">Sign in</button>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
 <!-- LOGIN PAGE -->
 <!-- ============================================================ -->
 <div class="page active" id="page-login">
@@ -223,6 +256,9 @@
         <button type="button" id="togglePassword">Show Password</button>
       </div>
       <button class="btn-primary" id="login-btn" onclick="doLogin()">Sign In</button>
+      <p style="text-align:center;margin-top:16px;font-size:0.875rem;color:var(--mid);">
+        New counselor? <button onclick="nav('register')" style="background:none;border:none;color:var(--sage-dark);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.875rem;text-decoration:underline;">Create an account</button>
+      </p>
     </div>
   </div>
 </div>
@@ -600,14 +636,23 @@
   </div>
 </div>
 
+<!-- CONFIRMATION MODAL -->
+<div id="modal-confirm" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:700;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:20px;padding:36px;width:100%;max-width:400px;text-align:center;">
+    <p id="confirm-message" style="font-size:0.9375rem;margin-bottom:24px;color:var(--charcoal);line-height:1.6;"></p>
+    <div style="display:flex;gap:12px;justify-content:center;">
+      <button class="btn-secondary" onclick="confirmResolve(false)">Cancel</button>
+      <button class="btn-primary" id="confirm-ok-btn" style="width:auto;padding:10px 28px;margin-top:0;background:var(--error);" onclick="confirmResolve(true)">Remove</button>
+    </div>
+  </div>
+</div>
+
 <!-- ============================================================ -->
 <!-- JAVASCRIPT -->
 <!-- ============================================================ -->
 <script>
 // ===== CONFIG =====
 const API_BASE = window.ENV?.API_URL ?? '/api/v1';
-
-
 
 // ===== STATE =====
 let currentUser = null;  // { id, first_name, last_name, email, role } from API
@@ -657,6 +702,17 @@ function togglePassword() {
 
 document.getElementById('togglePassword').addEventListener('click', togglePassword);
 
+let _confirmResolve = null;
+function showConfirm(message) {
+  document.getElementById('confirm-message').textContent = message;
+  document.getElementById('modal-confirm').style.display = 'flex';
+  return new Promise(res => { _confirmResolve = res; });
+}
+function confirmResolve(val) {
+  document.getElementById('modal-confirm').style.display = 'none';
+  if (_confirmResolve) { _confirmResolve(val); _confirmResolve = null; }
+}
+
 // ===== NAVIGATION =====
 function nav(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -667,7 +723,10 @@ function nav(page) {
   if (page === 'resource-library') renderResources();
   if (page === 'treatment-plan')   renderTreatmentPlan();
 
-  sessionStorage.setItem('currentPage', page)
+  // Don't persist auth pages to session
+  if (!['login','register'].includes(page)) {
+    sessionStorage.setItem('currentPage', page);
+  }
 }
 
 // ===== UPDATE NAV BADGES & GREETING =====
@@ -705,6 +764,50 @@ window.addEventListener('load', function() {
     }
   }
 });
+
+// ===== REGISTER =====
+async function doRegister() {
+  const fn       = document.getElementById('reg-fname').value.trim();
+  const ln       = document.getElementById('reg-lname').value.trim();
+  const email    = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value;
+  const errEl    = document.getElementById('register-error');
+  const btn      = document.getElementById('register-btn');
+
+  errEl.style.display = 'none';
+  if (!fn || !ln || !email || !password) {
+    errEl.textContent = 'Please fill in all fields.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Creating account…';
+
+  try {
+    const res = await fetch(`${API_BASE}/users/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ first_name: fn, last_name: ln, email, password, role: 'counselor' }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      errEl.textContent = err.detail || 'Registration failed. Email may already be in use.';
+      errEl.style.display = 'block';
+      return;
+    }
+    showToast('Account created! Please sign in.');
+    // Pre-fill login email
+    document.getElementById('login-email').value = email;
+    nav('login');
+  } catch {
+    errEl.textContent = 'Could not reach the server.';
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Create Account';
+  }
+}
 
 // ===== LOGIN =====
 async function doLogin() {
@@ -816,7 +919,18 @@ async function loadInitialData() {
       showToast('Could not load clients');
     }
   }
-  loadResourcesFromSession();
+  try {
+    const rRes = await fetch(`${API_BASE}/resources`, { headers, credentials: 'include' });
+    if (rRes.ok) {
+      const apiResources = await rRes.json();
+      // Merge with local (local has dataUrl, API has metadata)
+      const local = (() => { try { return JSON.parse(sessionStorage.getItem('mentassist_resources') || '[]'); } catch { return []; } })();
+      resources = apiResources.map(r => ({ ...r, ...local.find(l => l.id == r.id) }));
+      saveResourcesToSession();
+    } else {
+      loadResourcesFromSession();
+    }
+  } catch { loadResourcesFromSession(); }
 }
 
 // ===== HOME =====
@@ -832,7 +946,10 @@ function renderHome() {
     tbody.innerHTML = '<tr><td colspan="3" class="empty-state">No clients yet. Add your first client to get started.</td></tr>';
     return;
   }
-  tbody.innerHTML = clients.slice(0, 3).map(c => `
+  const recentClients = [...clients]
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(0, 3);
+  tbody.innerHTML = recentClients.map(c => `
     <tr onclick="openClient(${c.id})">
       <td><div class="client-name-cell">
         <div class="client-avatar">${c.first_name[0]}${c.last_name[0]}</div>
@@ -862,7 +979,10 @@ function renderClientList(filter = '') {
       </div></td>
       <td>${formatDate(c.dob)}</td>
       <td>${c.created_at ? formatDate(c.created_at.slice(0,10)) : '—'}</td>
-      <td><button class="link-btn" onclick="event.stopPropagation();openClient(${c.id})">View</button></td>
+      <td><div style="display:flex;gap:8px;align-items:center;">
+        <button class="link-btn" onclick="event.stopPropagation();openClient(${c.id})">View</button>
+        <button class="link-btn" style="color:var(--error);" onclick="event.stopPropagation();deleteClient(${c.id})">Remove</button>
+      </div></td>
     </tr>
   `).join('');
 }
@@ -1009,6 +1129,25 @@ async function createClient(dest) {
   } catch { showToast('Failed to create client'); }
 }
 
+async function deleteClient(id) {
+  const client = clients.find(c => c.id === id);
+  const name = client ? `${client.first_name} ${client.last_name}` : 'this client';
+  const confirmed = await showConfirm(`Remove ${name}? This cannot be undone.`);
+  if (!confirmed) return;
+  try {
+    const res = await fetch(`${API_BASE}/clients/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${currentUser.access_token}` },
+      credentials: 'include',
+    });
+    if (!res.ok && res.status !== 404) throw new Error();
+  } catch { /* backend not ready, silently continue */ }  
+  clients = clients.filter(c => c.id !== id);
+  saveClientsToSession(clients);
+  renderClientList();
+  showToast('Client removed');
+}
+
 function calcAge(dob) {
   if (!dob) return null;
   return Math.floor((new Date() - new Date(dob + 'T00:00:00')) / (365.25 * 24 * 60 * 60 * 1000));
@@ -1118,7 +1257,7 @@ async function saveClientInfo() {
       if (idx > -1) clients[idx] = { ...clients[idx], ...saved };
       saveClientsToSession(clients);
     }
-  } catch { /* backend not ready */ }
+  } catch { /* backend not ready, silently continue */ }
 }
 
 // ===== NOTE PERSISTENCE =====
@@ -1210,28 +1349,33 @@ function renderResources() {
         <div class="resource-tags">${(r.tags ?? []).map(t => `<span class="resource-tag">${t}</span>`).join('')}</div>
         <div class="rc-actions">
           ${canPreviewInline
-            ? `<button class="btn-secondary" style="font-size:0.8rem;padding:6px 12px;" onclick="toggleResourcePreview('${r.id}')">Preview</button>`
+            ? `<button class="btn-secondary" style="font-size:0.8rem;padding:6px 12px;" onclick="toggleResourcePreview('${r.id}', this)">Preview</button>`
             : ''}
           ${r.dataUrl
             ? `<button class="btn-secondary" style="font-size:0.8rem;padding:6px 12px;" onclick="downloadResource('${r.id}')">Download</button>`
             : ''}
-          <button class="btn-icon" style="margin-left:auto;" onclick="deleteResource('${r.id}')" title="Remove">×</button>
+          ${(!r.uploaded_by || r.uploaded_by == currentUser?.id)
+            ? `<button class="btn-icon" style="margin-left:auto;" onclick="deleteResource('${r.id}')" title="Remove">×</button>`
+            : `<span style="font-size:0.75rem;color:var(--light);margin-left:auto;">by ${r.uploader_name || 'another counselor'}</span>`}
         </div>
         ${canPreviewInline
           ? `<div class="rc-preview-area" id="preview-${r.id}">
-              ${isImage
-                ? `<img src="${r.dataUrl}" alt="${r.title}" style="max-height:200px;object-fit:contain;"/>`
-                : `<iframe src="${r.dataUrl}" title="${r.title}"></iframe>`}
-             </div>`
+            ${isImage
+              ? `<img src="${r.dataUrl}" alt="${r.title}"/>`
+              : isPDF
+                ? `<iframe src="${r.dataUrl}#toolbar=0" title="${r.title}"></iframe>`
+                : `<div class="preview-placeholder">📄 No preview available for this file type.<br>Use the Download button to open it.</div>`}
+          </div>`
           : ''}
       </div>`;
   }).join('');
 }
 
-function toggleResourcePreview(id) {
+function toggleResourcePreview(id, btn) {
   const el = document.getElementById(`preview-${id}`);
   if (!el) return;
-  el.classList.toggle('open');
+  const isOpen = el.classList.toggle('open');
+  if (btn) btn.textContent = isOpen ? 'Hide' : 'Preview';
 }
 
 function downloadResource(id) {
@@ -1245,8 +1389,20 @@ function downloadResource(id) {
   document.body.removeChild(a);
 }
 
-function deleteResource(id) {
-  resources = resources.filter(r => r.id !== id);
+async function deleteResource(id) {
+  const r = resources.find(x => x.id == id);
+  if (!r) return;
+  if (r.uploaded_by && r.uploaded_by !== currentUser.id) {
+    showToast('Only the uploader can remove this resource'); return;
+  }
+  try {
+    await fetch(`${API_BASE}/resources/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${currentUser.access_token}` },
+      credentials: 'include',
+    });
+  } catch {}
+  resources = resources.filter(x => x.id != id);
   saveResourcesToSession();
   renderResources();
   showToast('Resource removed');
@@ -1315,7 +1471,7 @@ function closeUploadModal() {
   _pendingFile = null;
 }
 
-function saveUploadedResource() {
+async function saveUploadedResource() {
   const title = document.getElementById('upload-title').value.trim();
   if (!title) { showToast('Please enter a title'); return; }
   if (!_pendingFile) { showToast('Please select a file'); return; }
@@ -1333,8 +1489,24 @@ function saveUploadedResource() {
     fileName: _pendingFile.name,
     mimeType: _pendingFile.mimeType,
     dataUrl:  _pendingFile.dataUrl,
+    uploaded_by: currentUser.id,
   });
   saveResourcesToSession();
+  // Also push to backend
+  try {
+    const res = await fetch(`${API_BASE}/resources`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${currentUser.access_token}` },
+      credentials: 'include',
+      body: JSON.stringify({ title, type, tags, file_name: _pendingFile.name, mime_type: _pendingFile.mimeType }),
+    });
+    if (res.ok) {
+      const saved = await res.json();
+      // Update local id to match backend id
+      resources[resources.length - 1].id = saved.id;
+      saveResourcesToSession();
+    }
+  } catch {}
   closeUploadModal();
   renderResources();
   showToast(`"${title}" added to library`);
@@ -1608,99 +1780,6 @@ function attachMedia() {
     showToast(`"${res.title}" attached`);
   }
 }
-
-
-
-function togglePassword() {
-  const input = document.getElementById('login-password');
-  const btn = event.target;
-
-  if (input.type === 'password') {
-    input.type = 'text';
-    btn.textContent = 'Hide';
-  } else {
-    input.type = 'password';
-    btn.textContent = 'Show';
-  }
-}
-
-async function exportTreatmentPlanPDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-
-  let y = 10;
-
-  // Debug visible on page (NOT console)
-  document.body.insertAdjacentHTML(
-    "afterbegin",
-    "<div style='position:fixed;top:0;left:0;background:red;color:white;z-index:9999;padding:5px;'>PDF EXPORT FIRED</div>"
-  );
-
-  // Title
-  doc.setFontSize(16);
-  doc.text("Treatment Plan", 10, y);
-  y += 10;
-
-  // Client name
-  const clientName = currentClient
-    ? `${currentClient.first_name} ${currentClient.last_name}`
-    : "Unknown Client";
-
-  doc.setFontSize(12);
-  doc.text(`Client: ${clientName}`, 10, y);
-  y += 10;
-
-  // Goals
-  doc.setFontSize(14);
-  doc.text("Goals", 10, y);
-  y += 8;
-
-  doc.setFontSize(11);
-
-  if (!goals || goals.length === 0) {
-    doc.text("No goals added.", 10, y);
-    y += 8;
-  } else {
-    goals.forEach((g, i) => {
-      const text = `${i + 1}. ${g.title}${g.description ? " - " + g.description : ""}`;
-      const lines = doc.splitTextToSize(text, 180);
-      doc.text(lines, 10, y);
-      y += lines.length * 6;
-    });
-  }
-
-  y += 5;
-
-  // Media
-  doc.setFontSize(14);
-  doc.text("Attached Media", 10, y);
-  y += 8;
-
-  doc.setFontSize(11);
-
-  if (!planMedia || planMedia.length === 0) {
-    doc.text("No media attached.", 10, y);
-    y += 8;
-  } else {
-    planMedia.forEach((m, i) => {
-      const name = m.name || m.title || "Untitled";
-      doc.text(`${i + 1}. ${name}`, 10, y);
-      y += 6;
-    });
-  }
-
-  doc.save("treatment-plan.pdf");
-}
-
-
 </script>
-</body>
-</html>
-
-
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-<script src="script.js"></script>
 </body>
 </html>
