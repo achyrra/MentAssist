@@ -22,3 +22,6 @@ Thumbs.db
 # mentassistdb/scripts/seed_dev.sqltest-export.pdf
 test-resource.txt
 downloaded-resource.txt
+
+# TLS certs (should be generated locally and not committed)
+ops/nginx/certs/

@@ -15,6 +15,10 @@ Please see "SETUP_DB.md" for instructions on setting up the database.
     - Generate a SECRET_KEY for `backend\.env`:
         - `python -c "import secrets; print(secrets.token_hex(32))"`
         - Copy the output and paste as `SECRET_KEY=<generated_value>`
+    - Generate TLS certificates (NOTE: this is a Powershell script):
+        - `.\ops\scripts\generate-certs.ps1`
+        - This creates `ops/nginx/certs/cert.pem` and `key.pem` locally
+        - Never commit these files
     - `docker compose up --build`
     - `docker compose ps`
 3. Verify all services are running
@@ -34,3 +38,6 @@ Counselor2 owns three seed clients: Maya Johnson, Daniel Reyes, and Priya Nair.
 - Seed hashes are pre-generated real bcrypt hashes -- no manual hash generation needed.
 - Backend connects as `app_user` with password `app_password_change_me`.
 - To fully reset the database: `docker compose down -v && docker compose up --build`
+- If `generate-certs.ps1` fails to locate `openssl.cnf`, run the following instead, replacing the path with your actual OpenSSL config location:
+    - `$env:OPENSSL_CONF = "C:\<your-path>\openssl.cnf"`
+    - `.\ops\scripts\generate-certs.ps1`
