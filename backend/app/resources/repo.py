@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import text
+from app.core.audit import write_audit_log
 import json
 
 
@@ -35,11 +36,17 @@ def create_resource(db: Session, data: dict):
         "created_by": data.get("created_by"),
     })
     db.commit()
-    return r.mappings().first()
+    row = r.mappings().first()
+    write_audit_log(db, data.get("created_by"), "create", "resource", row["id"],
+                    {"title": data["title"], "type": data["type"]})
+    return row
 
 
-def delete_resource(db: Session, resource_id: int) -> bool:
+def delete_resource(db: Session, resource_id: int, user_id: int = None) -> bool:
     q = text("DELETE FROM resources WHERE id = :id RETURNING id")
     r = db.execute(q, {"id": resource_id})
     db.commit()
-    return r.scalar() is not None
+    deleted = r.scalar() is not None
+    if deleted:
+        write_audit_log(db, user_id, "delete", "resource", resource_id)
+    return deleted

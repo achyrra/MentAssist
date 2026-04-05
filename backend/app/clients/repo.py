@@ -1,5 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import text
+from app.core.audit import write_audit_log
+
 
 def create_client(db: Session, data: dict):
     q = text("""
@@ -9,7 +11,10 @@ def create_client(db: Session, data: dict):
     """)
     r = db.execute(q, data)
     db.commit()
-    return r.mappings().first()
+    row = r.mappings().first()
+    write_audit_log(db, data.get("counselor_id"), "create", "client", row["id"])
+    return row
+
 
 def list_clients(db: Session, counselor_id: int = None, limit: int = 50, offset: int = 0):
     if counselor_id is None:
@@ -26,6 +31,7 @@ def list_clients(db: Session, counselor_id: int = None, limit: int = 50, offset:
         r = db.execute(q, {"counselor_id": counselor_id, "limit": limit, "offset": offset})
     return r.mappings().all()
 
+
 def get_client(db: Session, client_id: int):
     q = text("""
         SELECT id, counselor_id, first_name, last_name, dob, primary_diagnosis, primary_concerns, therapy_focus, created_at
@@ -33,6 +39,7 @@ def get_client(db: Session, client_id: int):
     """)
     r = db.execute(q, {"id": client_id})
     return r.mappings().first()
+
 
 def update_client(db: Session, client_id: int, data: dict):
     q = text("""
@@ -48,10 +55,17 @@ def update_client(db: Session, client_id: int, data: dict):
     """)
     r = db.execute(q, {"id": client_id, **data})
     db.commit()
-    return r.mappings().first()
+    row = r.mappings().first()
+    if row:
+        write_audit_log(db, row["counselor_id"], "update", "client", client_id)
+    return row
 
-def delete_client(db: Session, client_id: int) -> bool:
-    q = text("DELETE FROM clients WHERE id = :id RETURNING id")
+
+def delete_client(db: Session, client_id: int, user_id: int = None) -> bool:
+    q = text("DELETE FROM clients WHERE id = :id RETURNING id, counselor_id")
     r = db.execute(q, {"id": client_id})
     db.commit()
-    return r.mappings().first() is not None
+    row = r.mappings().first()
+    if row:
+        write_audit_log(db, user_id or row["counselor_id"], "delete", "client", client_id)
+    return row is not None

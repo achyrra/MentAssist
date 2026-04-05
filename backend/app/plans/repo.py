@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import text
+from app.core.audit import write_audit_log
 import json
 
 
@@ -38,8 +39,7 @@ def get_plan_by_client(db: Session, client_id: int):
 def list_plans_by_client(db: Session, client_id: int):
     q = text("""
         SELECT id, client_id, version, status, needs, media, created_by, created_at
-        FROM treatment_plans WHERE client_id = :client_id
-        ORDER BY version DESC
+        FROM treatment_plans WHERE client_id = :client_id ORDER BY version DESC
     """)
     return db.execute(q, {"client_id": client_id}).mappings().all()
 
@@ -67,7 +67,7 @@ def delete_plan(db: Session, plan_id: int):
     return r.scalar() is not None
 
 
-def upsert_plan(db: Session, client_id: int, needs: list, media: list):
+def upsert_plan(db: Session, client_id: int, needs: list, media: list, user_id: int = None):
     q = text("""
         INSERT INTO treatment_plans (client_id, version, status, needs, media)
         VALUES (:client_id, 1, 'draft', :needs, :media)
@@ -83,7 +83,10 @@ def upsert_plan(db: Session, client_id: int, needs: list, media: list):
         "media": json.dumps(media)
     })
     db.commit()
-    return r.mappings().first()
+    row = r.mappings().first()
+    write_audit_log(db, user_id, "upsert", "treatment_plan", row["id"],
+                    {"needs_count": len(needs), "media_count": len(media)})
+    return row
 
 
 # Goals

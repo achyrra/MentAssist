@@ -42,6 +42,6 @@ def update_note(note_id: int, payload: NoteUpdate, db: Session = Depends(get_db)
 
 @router.delete("/{note_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_note(note_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    ok = repo.delete_note(db, note_id)
+    ok = repo.delete_note(db, note_id, user_id=current_user["id"])
     if not ok:
         raise HTTPException(status_code=404, detail="Note not found")

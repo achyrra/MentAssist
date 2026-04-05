@@ -77,6 +77,6 @@ def download_resource(resource_id: int, db: Session = Depends(get_db), current_u
 
 @router.delete("/{resource_id}", status_code=204)
 def delete_resource(resource_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    deleted = repo.delete_resource(db, resource_id)
+    deleted = repo.delete_resource(db, resource_id, user_id=current_user["id"])
     if not deleted:
         raise HTTPException(status_code=404, detail="Resource not found")

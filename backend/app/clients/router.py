@@ -124,23 +124,19 @@ def _build_plan_pdf(client: dict, plan: dict, counselor: dict) -> bytes:
         for i, need in enumerate(needs):
             if i > 0:
                 story.append(HRFlowable(width="100%", thickness=0.5, color=divider, spaceBefore=12, spaceAfter=12))
-
             story.append(Paragraph(f"TREATMENT NEED {i + 1}", need_label_style))
             story.append(Paragraph(need.get("title", "Untitled"), need_title_style))
-
             goal = need.get("goal")
             if goal:
                 story.append(Spacer(1, 4))
                 story.append(Paragraph("TREATMENT GOAL", label_style))
                 story.append(Paragraph(goal, body_style))
-
             objectives = need.get("objectives") or []
             if objectives:
                 story.append(Spacer(1, 4))
                 story.append(Paragraph("SHORT-TERM OBJECTIVES", label_style))
                 for oi, obj in enumerate(objectives):
                     story.append(Paragraph(f"{oi + 1}.  {obj}", objective_style))
-
             interventions = need.get("interventions") or []
             if interventions:
                 story.append(Spacer(1, 4))
@@ -161,7 +157,9 @@ def _build_plan_pdf(client: dict, plan: dict, counselor: dict) -> bytes:
 
 @router.post("", status_code=201, response_model=ClientOut)
 def create_client(payload: ClientCreate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    return repo.create_client(db, payload.model_dump())
+    data = payload.model_dump()
+    data["counselor_id"] = data.get("counselor_id") or current_user["id"]
+    return repo.create_client(db, data)
 
 
 @router.get("", response_model=list[ClientOut])
@@ -194,7 +192,7 @@ def update_client(client_id: int, payload: ClientUpdate, db: Session = Depends(g
 
 @router.delete("/{client_id}", status_code=204)
 def delete_client(client_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    deleted = repo.delete_client(db, client_id)
+    deleted = repo.delete_client(db, client_id, user_id=current_user["id"])
     if not deleted:
         raise HTTPException(status_code=404, detail="Client not found")
 
@@ -215,7 +213,7 @@ def save_plan(client_id: int, payload: PlanPayload, db: Session = Depends(get_db
     client = repo.get_client(db, client_id)
     if not client:
         raise HTTPException(status_code=404, detail="Client not found")
-    plan = plans_repo.upsert_plan(db, client_id, payload.needs, payload.media)
+    plan = plans_repo.upsert_plan(db, client_id, payload.needs, payload.media, user_id=current_user["id"])
     return {"needs": plan["needs"], "media": plan["media"]}
 
 

@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import text
+from app.core.audit import write_audit_log
 
 
 def create_note(db: Session, data: dict):
@@ -11,6 +12,7 @@ def create_note(db: Session, data: dict):
     r = db.execute(q, data)
     new_id = r.scalar()
     db.commit()
+    write_audit_log(db, data.get("created_by"), "create", "note", new_id)
     return get_note(db, new_id)
 
 
@@ -51,7 +53,7 @@ def update_note(db: Session, note_id: int, data: dict):
     return get_note(db, updated_id)
 
 
-def delete_note(db: Session, note_id: int):
+def delete_note(db: Session, note_id: int, user_id: int = None):
     q = text("""
         DELETE FROM session_notes
         WHERE id = :id
@@ -59,4 +61,7 @@ def delete_note(db: Session, note_id: int):
     """)
     r = db.execute(q, {"id": note_id})
     db.commit()
-    return r.scalar() is not None
+    deleted = r.scalar() is not None
+    if deleted:
+        write_audit_log(db, user_id, "delete", "note", note_id)
+    return deleted

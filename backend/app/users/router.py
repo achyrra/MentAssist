@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from app.core.security import create_access_token, verify_password, hash_password
+from app.core.audit import write_audit_log
 from app.db.session import get_db
 from . import repo
 from .schemas import UserCreate, UserOut, UserLogin
@@ -17,6 +18,7 @@ def register(payload: UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Invalid role")
     password_hash = hash_password(payload.password)
     user = repo.create_user(db, payload.email, password_hash, payload.role, payload.first_name, payload.last_name)
+    write_audit_log(db, user["id"], "register", "user", user["id"])
     return user
 
 
@@ -36,6 +38,7 @@ def login(payload: UserLogin, db: Session = Depends(get_db)):
     if user["status"] != "active":
         raise HTTPException(status_code=403, detail="User account is disabled")
     token = create_access_token(user["id"], user["role"])
+    write_audit_log(db, user["id"], "login", "user", user["id"])
     return {
         "access_token": token,
         "token_type": "bearer",
