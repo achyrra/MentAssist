@@ -19,3 +19,11 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     if not user or user["status"] != "active":
         raise HTTPException(status_code=401, detail="User not found or disabled")
     return user
+
+def assert_client_access(client, current_user: dict):
+    """Helper to check if the current user has access to the given client."""
+    if current_user["role"] == "admin":
+        return
+    if client["counselor_id"] != current_user["id"]:
+        """using 404 to avoid revealing existence of client to unauthorized users"""
+        raise HTTPException(status_code=404, detail="Client not found")
