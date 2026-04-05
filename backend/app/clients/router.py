@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, status, Response, Query
 from sqlalchemy.orm import Session
 from app.db.session import get_db
-from app.core.deps import get_current_user
+from app.core.deps import get_current_user, assert_client_access
 from .schemas import ClientCreate, ClientUpdate, ClientOut
 from . import repo
 from app.notes import repo as notes_repo
@@ -179,11 +179,17 @@ def get_client(client_id: int, db: Session = Depends(get_db), current_user: dict
     client = repo.get_client(db, client_id)
     if not client:
         raise HTTPException(status_code=404, detail="Client not found")
+    assert_client_access(client, current_user)
     return client
 
 
 @router.put("/{client_id}", response_model=ClientOut)
 def update_client(client_id: int, payload: ClientUpdate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
+    client = repo.get_client(db, client_id)
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+    assert_client_access(client, current_user)
+
     updated = repo.update_client(db, client_id, payload.model_dump())
     if not updated:
         raise HTTPException(status_code=404, detail="Client not found")
@@ -192,6 +198,11 @@ def update_client(client_id: int, payload: ClientUpdate, db: Session = Depends(g
 
 @router.delete("/{client_id}", status_code=204)
 def delete_client(client_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
+    client = repo.get_client(db, client_id)
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+    assert_client_access(client, current_user)
+
     deleted = repo.delete_client(db, client_id, user_id=current_user["id"])
     if not deleted:
         raise HTTPException(status_code=404, detail="Client not found")
@@ -202,6 +213,7 @@ def get_plan(client_id: int, db: Session = Depends(get_db), current_user: dict =
     client = repo.get_client(db, client_id)
     if not client:
         raise HTTPException(status_code=404, detail="Client not found")
+    assert_client_access(client, current_user)
     plan = plans_repo.get_plan_by_client(db, client_id)
     if not plan:
         return {"needs": [], "media": []}
@@ -213,6 +225,7 @@ def save_plan(client_id: int, payload: PlanPayload, db: Session = Depends(get_db
     client = repo.get_client(db, client_id)
     if not client:
         raise HTTPException(status_code=404, detail="Client not found")
+    assert_client_access(client, current_user)
     plan = plans_repo.upsert_plan(db, client_id, payload.needs, payload.media, user_id=current_user["id"])
     return {"needs": plan["needs"], "media": plan["media"]}
 
@@ -222,6 +235,7 @@ def export_plan(client_id: int, db: Session = Depends(get_db), current_user: dic
     client = repo.get_client(db, client_id)
     if not client:
         raise HTTPException(status_code=404, detail="Client not found")
+    assert_client_access(client, current_user)
     plan = plans_repo.get_plan_by_client(db, client_id)
     if not plan:
         raise HTTPException(status_code=404, detail="No plan found for client")
@@ -239,6 +253,7 @@ def create_client_note(client_id: int, payload: ClientNoteCreate, db: Session = 
     client = repo.get_client(db, client_id)
     if not client:
         raise HTTPException(status_code=404, detail="Client not found")
+    assert_client_access(client, current_user)
     note = notes_repo.create_note(db, {
         "client_id": client_id,
         "note_text": payload.content,
@@ -259,5 +274,6 @@ def list_client_notes(
     client = repo.get_client(db, client_id)
     if not client:
         raise HTTPException(status_code=404, detail="Client not found")
+    assert_client_access(client, current_user)
     notes = notes_repo.list_notes_by_client(db, client_id, limit=limit, offset=offset)
     return [{"id": n["id"], "content": n["note_text"], "created_at": n["created_at"]} for n in notes]

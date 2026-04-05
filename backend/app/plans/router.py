@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy.orm import Session
 from app.db.session import get_db
-from app.core.deps import get_current_user
+from app.clients import repo as clients_repo
+from app.core.deps import get_current_user, assert_client_access
 from . import repo
 from .schemas import (
     PlanCreate, PlanUpdate, PlanOut,
@@ -21,6 +22,10 @@ def create_plan(payload: PlanCreate, db: Session = Depends(get_db), current_user
 
 @router.get("/client/{client_id}", response_model=list[PlanOut])
 def list_plans(client_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
+    client = clients_repo.get_client(db, client_id)
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+    assert_client_access(client, current_user)
     return repo.list_plans_by_client(db, client_id)
 
 
@@ -29,19 +34,31 @@ def get_plan(plan_id: int, db: Session = Depends(get_db), current_user: dict = D
     plan = repo.get_plan(db, plan_id)
     if not plan:
         raise HTTPException(status_code=404, detail="Plan not found")
+    client = clients_repo.get_client(db, plan["client_id"])
+    assert_client_access(client, current_user)
     return plan
 
 
 @router.patch("/{plan_id}", response_model=PlanOut)
 def update_plan(plan_id: int, payload: PlanUpdate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    plan = repo.update_plan(db, plan_id, payload.model_dump())
+    plan = repo.get_plan(db, plan_id)
     if not plan:
         raise HTTPException(status_code=404, detail="Plan not found")
-    return plan
+    client = clients_repo.get_client(db, plan["client_id"])
+    assert_client_access(client, current_user)
+    updated = repo.update_plan(db, plan_id, payload.model_dump())
+    if not updated:
+        raise HTTPException(status_code=404, detail="Plan not found")
+    return updated
 
 
 @router.delete("/{plan_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_plan(plan_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
+    plan = repo.get_plan(db, plan_id)
+    if not plan:
+        raise HTTPException(status_code=404, detail="Plan not found")
+    client = clients_repo.get_client(db, plan["client_id"])
+    assert_client_access(client, current_user)
     ok = repo.delete_plan(db, plan_id)
     if not ok:
         raise HTTPException(status_code=404, detail="Plan not found")

@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException, Depends, status, Query
 from sqlalchemy.orm import Session
 from app.db.session import get_db
-from app.core.deps import get_current_user
+from app.clients import repo as clients_repo
+from app.core.deps import get_current_user, assert_client_access
 from . import repo
 from .schemas import NoteCreate, NoteUpdate, NoteOut
 
@@ -29,19 +30,31 @@ def get_note(note_id: int, db: Session = Depends(get_db), current_user: dict = D
     note = repo.get_note(db, note_id)
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
+    client = clients_repo.get_client(db, note["client_id"])
+    assert_client_access(client, current_user)
     return note
 
 
 @router.patch("/{note_id}", response_model=NoteOut)
 def update_note(note_id: int, payload: NoteUpdate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    note = repo.update_note(db, note_id, payload.model_dump())
+    note = repo.get_note(db, note_id)
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
-    return note
+    client = clients_repo.get_client(db, note["client_id"])
+    assert_client_access(client, current_user)
+    updated = repo.update_note(db, note_id, payload.model_dump())
+    if not updated:
+        raise HTTPException(status_code=404, detail="Note not found")
+    return updated
 
 
 @router.delete("/{note_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_note(note_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
+    note = repo.get_note(db, note_id)
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+    client = clients_repo.get_client(db, note["client_id"])
+    assert_client_access(client, current_user)
     ok = repo.delete_note(db, note_id, user_id=current_user["id"])
     if not ok:
         raise HTTPException(status_code=404, detail="Note not found")
