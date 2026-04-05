@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, status, Response
+from fastapi import APIRouter, HTTPException, Depends, status, Response, Query
 from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.core.deps import get_current_user
@@ -108,7 +108,6 @@ def _build_plan_pdf(client: dict, plan: dict, counselor: dict) -> bytes:
     client_name = f"{client['first_name']} {client['last_name']}"
     counselor_name = f"{counselor.get('first_name', '')} {counselor.get('last_name', '')}".strip() or counselor.get('email', '')
 
-    # Header
     story.append(Paragraph("MENTASSIST · TREATMENT PLAN", brand_style))
     story.append(HRFlowable(width="100%", thickness=2, color=sage, spaceAfter=8))
     story.append(Paragraph("CLIENT INFORMATION", section_label_style))
@@ -118,7 +117,6 @@ def _build_plan_pdf(client: dict, plan: dict, counselor: dict) -> bytes:
     story.append(Paragraph(f"<b>Date:</b> {today_str}", client_info_style))
     story.append(Spacer(1, 16))
 
-    # Needs
     needs = plan.get("needs") or []
     if not needs:
         story.append(Paragraph("No treatment needs have been added.", empty_style))
@@ -150,7 +148,6 @@ def _build_plan_pdf(client: dict, plan: dict, counselor: dict) -> bytes:
                 for iv in interventions:
                     story.append(Paragraph(f"•  {iv}", intervention_style))
 
-    # Footer
     story.append(Spacer(1, 24))
     story.append(HRFlowable(width="100%", thickness=0.5, color=divider, spaceAfter=6))
     story.append(Paragraph(
@@ -168,10 +165,15 @@ def create_client(payload: ClientCreate, db: Session = Depends(get_db), current_
 
 
 @router.get("", response_model=list[ClientOut])
-def list_clients(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
+def list_clients(
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
     if current_user["role"] == "admin":
-        return repo.list_clients(db, counselor_id=None)
-    return repo.list_clients(db, counselor_id=current_user["id"])
+        return repo.list_clients(db, counselor_id=None, limit=limit, offset=offset)
+    return repo.list_clients(db, counselor_id=current_user["id"], limit=limit, offset=offset)
 
 
 @router.get("/{client_id}", response_model=ClientOut)
@@ -249,9 +251,15 @@ def create_client_note(client_id: int, payload: ClientNoteCreate, db: Session = 
 
 
 @router.get("/{client_id}/notes", response_model=list[ClientNoteOut])
-def list_client_notes(client_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
+def list_client_notes(
+    client_id: int,
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
     client = repo.get_client(db, client_id)
     if not client:
         raise HTTPException(status_code=404, detail="Client not found")
-    notes = notes_repo.list_notes_by_client(db, client_id)
+    notes = notes_repo.list_notes_by_client(db, client_id, limit=limit, offset=offset)
     return [{"id": n["id"], "content": n["note_text"], "created_at": n["created_at"]} for n in notes]

@@ -11,19 +11,19 @@ def create_client(db: Session, data: dict):
     db.commit()
     return r.mappings().first()
 
-def list_clients(db: Session, counselor_id: int = None):
+def list_clients(db: Session, counselor_id: int = None, limit: int = 50, offset: int = 0):
     if counselor_id is None:
         q = text("""
             SELECT id, counselor_id, first_name, last_name, dob, primary_diagnosis, primary_concerns, therapy_focus, created_at
-            FROM clients ORDER BY id
+            FROM clients ORDER BY id LIMIT :limit OFFSET :offset
         """)
-        r = db.execute(q)
+        r = db.execute(q, {"limit": limit, "offset": offset})
     else:
         q = text("""
             SELECT id, counselor_id, first_name, last_name, dob, primary_diagnosis, primary_concerns, therapy_focus, created_at
-            FROM clients WHERE counselor_id = :counselor_id ORDER BY id
+            FROM clients WHERE counselor_id = :counselor_id ORDER BY id LIMIT :limit OFFSET :offset
         """)
-        r = db.execute(q, {"counselor_id": counselor_id})
+        r = db.execute(q, {"counselor_id": counselor_id, "limit": limit, "offset": offset})
     return r.mappings().all()
 
 def get_client(db: Session, client_id: int):

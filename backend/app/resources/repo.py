@@ -3,12 +3,12 @@ from sqlalchemy import text
 import json
 
 
-def list_resources(db: Session):
+def list_resources(db: Session, limit: int = 50, offset: int = 0):
     q = text("""
         SELECT id, title, type, tags, file_name, mime_type, created_by, created_at
-        FROM resources ORDER BY created_at DESC
+        FROM resources ORDER BY created_at DESC LIMIT :limit OFFSET :offset
     """)
-    return db.execute(q).mappings().all()
+    return db.execute(q, {"limit": limit, "offset": offset}).mappings().all()
 
 
 def get_resource(db: Session, resource_id: int):

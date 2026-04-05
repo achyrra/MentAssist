@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from app.db.session import get_db
@@ -11,8 +11,13 @@ router = APIRouter()
 
 
 @router.get("")
-def list_resources(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    rows = repo.list_resources(db)
+def list_resources(
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    rows = repo.list_resources(db, limit=limit, offset=offset)
     return [
         {
             "id":       str(r["id"]),

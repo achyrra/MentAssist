@@ -13,13 +13,14 @@ def create_appointment(db: Session, data: dict):
     return r.mappings().first()
 
 
-def list_appointments(db: Session):
+def list_appointments(db: Session, limit: int = 50, offset: int = 0):
     q = text("""
         SELECT id, client_id, scheduled_at, location, created_by, created_at
         FROM appointments
         ORDER BY scheduled_at DESC
+        LIMIT :limit OFFSET :offset
     """)
-    r = db.execute(q)
+    r = db.execute(q, {"limit": limit, "offset": offset})
     return r.mappings().all()
 
 

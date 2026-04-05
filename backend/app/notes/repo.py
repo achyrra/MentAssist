@@ -24,14 +24,15 @@ def get_note(db: Session, note_id: int):
     return r.mappings().first()
 
 
-def list_notes_by_client(db: Session, client_id: int):
+def list_notes_by_client(db: Session, client_id: int, limit: int = 50, offset: int = 0):
     q = text("""
         SELECT id, client_id, appointment_id, note_text, created_by, created_at
         FROM session_notes
         WHERE client_id = :client_id
         ORDER BY created_at DESC
+        LIMIT :limit OFFSET :offset
     """)
-    r = db.execute(q, {"client_id": client_id})
+    r = db.execute(q, {"client_id": client_id, "limit": limit, "offset": offset})
     return r.mappings().all()
 
 

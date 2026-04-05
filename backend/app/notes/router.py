@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, status, Query
 from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.core.deps import get_current_user
@@ -14,8 +14,14 @@ def create_note(payload: NoteCreate, db: Session = Depends(get_db), current_user
 
 
 @router.get("/client/{client_id}", response_model=list[NoteOut])
-def list_notes(client_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    return repo.list_notes_by_client(db, client_id)
+def list_notes(
+    client_id: int,
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    return repo.list_notes_by_client(db, client_id, limit=limit, offset=offset)
 
 
 @router.get("/{note_id}", response_model=NoteOut)
