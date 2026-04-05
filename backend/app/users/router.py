@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.core.security import create_access_token, verify_password, hash_password
 from app.core.audit import write_audit_log
 from app.db.session import get_db
+from app.core.deps import get_current_user
 from . import repo
 from .schemas import UserCreate, UserOut, UserLogin
 
@@ -23,7 +24,7 @@ def register(payload: UserCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/{user_id}", response_model=UserOut)
-def get_user(user_id: int, db: Session = Depends(get_db)):
+def get_user(user_id: int, db: Session = Depends(get_db), current_user:dict = Depends(get_current_user)):
     user = repo.get_user_by_id(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
