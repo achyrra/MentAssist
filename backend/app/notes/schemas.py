@@ -6,7 +6,7 @@ from typing import Optional
 class NoteCreate(BaseModel):
     client_id: int
     appointment_id: Optional[int] = None
-    note_text: str
+    note_text: str = Field(..., max_length=10000)
     created_by: Optional[int] = None
 
 
