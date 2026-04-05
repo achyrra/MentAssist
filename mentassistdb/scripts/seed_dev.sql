@@ -1,10 +1,10 @@
 -- DEV ONLY SEED DATA
 -- Dev credentials (DO NOT use in production)
 -- counselor1@mentassist.com : Mentor123!
-
+-- counselor2@mentassist.com : Mentor123!
 INSERT INTO users (id, email, password_hash, role, first_name, last_name) VALUES
-  (1, 'counselor1@mentassist.com', '$2b$12$bsMYWQS45eQDKM0H1daHhOGuLN1i0uEBWzVTR0mUSifQAfEXFbsVa', 'counselor', 'Counselor', 'One'),
-
+  (1, 'counselor1@mentassist.com', '$2b$12$0KIO8mTf.zG.PA2NVj3GP.peAyj8527dkx/fjH0wpOz4kboEobcLm', 'counselor', 'Counselor', 'One'),
+  (2, 'counselor2@mentassist.com', '$2b$12$0KIO8mTf.zG.PA2NVj3GP.peAyj8527dkx/fjH0wpOz4kboEobcLm', 'counselor', 'Counselor', 'Two')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO clients (counselor_id, first_name, last_name, dob)
