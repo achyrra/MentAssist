@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from app.db.session import engine
 from app.api.v1.router import router as v1_router
@@ -9,6 +10,14 @@ app = FastAPI(
     openapi_url="/api/v1/openapi.json",
     redoc_url="/api/v1/redoc",
     redirect_slashes=False
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://localhost"],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allow_headers=["Authorization", "Content-Type", "Accept"],
 )
 
 @app.get("/health")
