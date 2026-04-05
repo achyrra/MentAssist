@@ -221,7 +221,18 @@
         <div class="field"><label>First Name</label><input type="text" id="reg-fname" placeholder="Jane"/></div>
         <div class="field"><label>Last Name</label><input type="text" id="reg-lname" placeholder="Smith"/></div>
         <div class="field full"><label>Email Address</label><input type="email" id="reg-email" placeholder="you@example.com"/></div>
-        <div class="field full"><label>Password</label><input type="password" id="reg-password" placeholder="••••••••"/></div>
+        <div class="field full">
+          <label>Password</label>
+          <input type="password" id="reg-password" placeholder="••••••••"/>
+          <small style="color:var(--mid);font-size:0.78rem;margin-top:4px;display:block;">
+            Min. 8 characters, 1 uppercase, 1 number, 1 special character
+          </small>
+        </div>
+        <div class="field full">
+          <label>Confirm Password</label>
+          <input type="password" id="reg-confirm-password" placeholder="••••••••"
+            onkeydown="if(event.key==='Enter') doRegister()"/>
+        </div>
       </div>
       <button class="btn-primary" id="register-btn" onclick="doRegister()">Create Account</button>
       <p style="text-align:center;margin-top:16px;font-size:0.875rem;color:var(--mid);">
@@ -771,12 +782,44 @@ async function doRegister() {
   const ln       = document.getElementById('reg-lname').value.trim();
   const email    = document.getElementById('reg-email').value.trim();
   const password = document.getElementById('reg-password').value;
+  const confirm  = document.getElementById('reg-confirm-password').value;
   const errEl    = document.getElementById('register-error');
   const btn      = document.getElementById('register-btn');
 
   errEl.style.display = 'none';
-  if (!fn || !ln || !email || !password) {
+
+  // Empty field check
+  if (!fn || !ln || !email || !password || !confirm) {
     errEl.textContent = 'Please fill in all fields.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // Password policy — mirrors backend validator
+  if (password.length < 8) {
+    errEl.textContent = 'Password must be at least 8 characters.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (!/[A-Z]/.test(password)) {
+    errEl.textContent = 'Password must contain at least one uppercase letter.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (!/\d/.test(password)) {
+    errEl.textContent = 'Password must contain at least one digit.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (!/[!@#$%^&*(),.?":{}|<>\-_=+\[\]\\\/;'`~]/.test(password)) {
+    errEl.textContent = 'Password must contain at least one special character.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // Confirm match
+  if (password !== confirm) {
+    errEl.textContent = 'Passwords do not match.';
     errEl.style.display = 'block';
     return;
   }
@@ -792,12 +835,16 @@ async function doRegister() {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      errEl.textContent = err.detail || 'Registration failed. Email may already be in use.';
+      // Pydantic 422 detail is an array; extract the message cleanly
+      const detail = err.detail;
+      const msg = Array.isArray(detail)
+        ? detail.map(e => e.msg.replace(/^Value error, /, '')).join(' ')
+        : (detail || 'Registration failed. Email may already be in use.');
+      errEl.textContent = msg;
       errEl.style.display = 'block';
       return;
     }
     showToast('Account created! Please sign in.');
-    // Pre-fill login email
     document.getElementById('login-email').value = email;
     nav('login');
   } catch {
