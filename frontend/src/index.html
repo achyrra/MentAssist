@@ -7,6 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Security-Policy" content="connect-src 'self' blob:;">
 <title>MentAssist — Therapy Platform</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -746,6 +747,37 @@
   </div>
 </div>
 
+<!-- EDIT NEED MODAL -->
+<div id="modal-edit-need" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:500;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:20px;padding:36px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;position:relative;">
+    <button onclick="closeEditNeedModal()" style="position:absolute;top:16px;right:16px;border:none;background:var(--cream);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:1rem;">✕</button>
+    <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:400;margin-bottom:24px;">Edit Treatment Need</h3>
+    <input type="hidden" id="edit-need-id"/>
+    <div class="field">
+      <label>Treatment Need</label>
+      <input type="text" id="edit-need-title" placeholder="e.g. Emotional Regulation"/>
+    </div>
+    <div class="field">
+      <label>Treatment Goal</label>
+      <textarea class="field-input" id="edit-need-goal" placeholder="Within X weeks, the client will…" style="min-height:70px;margin-bottom:0;"></textarea>
+    </div>
+    <div style="margin-top:16px;">
+      <label style="display:block;font-size:0.8rem;font-weight:500;color:var(--mid);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">Short-Term Objectives</label>
+      <div id="edit-objectives-list"></div>
+      <button class="btn-secondary" style="font-size:0.8125rem;padding:6px 14px;margin-top:6px;" onclick="addEditObjectiveField()">+ Add Objective</button>
+    </div>
+    <div style="margin-top:16px;">
+      <label style="display:block;font-size:0.8rem;font-weight:500;color:var(--mid);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">Interventions</label>
+      <div id="edit-interventions-list"></div>
+      <button class="btn-secondary" style="font-size:0.8125rem;padding:6px 14px;margin-top:6px;" onclick="addEditInterventionField()">+ Add Intervention</button>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:24px;">
+      <button class="btn-secondary" onclick="closeEditNeedModal()">Cancel</button>
+      <button class="btn-primary" style="width:auto;padding:10px 24px;margin-top:0;" onclick="saveEditNeed()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
 <!-- ============================================================ -->
 <!-- JAVASCRIPT -->
 <!-- ============================================================ -->
@@ -986,6 +1018,10 @@ function confirmResolve(val) {
 
 document.getElementById('modal-attach').addEventListener('click', function(e) {
   if (e.target === this) closeAttachModal();
+});
+
+document.getElementById('modal-edit-need').addEventListener('click', function(e) {
+  if (e.target === this) closeEditNeedModal();
 });
 
 function loadPDFBlob(id) {
@@ -1890,6 +1926,7 @@ function renderTreatmentPlan() {
           <div style="display:flex;align-items:center;gap:10px;">
             <span style="font-size:0.75rem;color:var(--light);">${n.objectives.length} obj · ${n.interventions.length} intv</span>
             <span style="color:var(--mid);font-size:0.8rem;">${n.expanded ? '▲' : '▼'}</span>
+            <button class="btn-icon" style="flex-shrink:0;" onclick="event.stopPropagation();editNeed(${n.id})" title="Edit" style="margin-right:4px;">✎</button>
             <button class="btn-icon" style="flex-shrink:0;" onclick="event.stopPropagation();removeNeed(${n.id})" title="Remove">×</button>
           </div>
         </div>
@@ -1937,6 +1974,7 @@ function toggleNeed(id) {
 
 function removeNeed(id) {
   treatmentNeeds = treatmentNeeds.filter(n => n.id !== id);
+  savePlan();
   renderTreatmentPlan();
   showToast('Treatment need removed');
 }
@@ -1957,6 +1995,66 @@ function toggleAddNeed() {
     addInterventionField();
     setTimeout(() => document.getElementById('new-need-title').focus(), 50);
   }
+}
+function editNeed(id) {
+  const need = treatmentNeeds.find(n => n.id === id);
+  if (!need) return;
+
+  document.getElementById('edit-need-id').value = id;
+  document.getElementById('edit-need-title').value = need.title;
+  document.getElementById('edit-need-goal').value = need.goal || '';
+
+  const objList = document.getElementById('edit-objectives-list');
+  objList.innerHTML = '';
+  (need.objectives.length ? need.objectives : ['']).forEach(o => addEditObjectiveField(o));
+
+  const intvList = document.getElementById('edit-interventions-list');
+  intvList.innerHTML = '';
+  (need.interventions.length ? need.interventions : ['']).forEach(iv => addEditInterventionField(iv));
+
+  document.getElementById('modal-edit-need').style.display = 'flex';
+  setTimeout(() => document.getElementById('edit-need-title').focus(), 50);
+}
+
+function addEditObjectiveField(value = '') {
+  const wrap = document.getElementById('edit-objectives-list');
+  const div = document.createElement('div');
+  div.className = 'dynamic-field';
+  div.innerHTML = `<textarea placeholder="Measurable objective…">${value}</textarea><button class="btn-remove-field" onclick="this.parentElement.remove()">×</button>`;
+  wrap.appendChild(div);
+}
+
+function addEditInterventionField(value = '') {
+  const wrap = document.getElementById('edit-interventions-list');
+  const div = document.createElement('div');
+  div.className = 'dynamic-field';
+  div.innerHTML = `<textarea placeholder="Intervention strategy…">${value}</textarea><button class="btn-remove-field" onclick="this.parentElement.remove()">×</button>`;
+  wrap.appendChild(div);
+}
+
+function saveEditNeed() {
+  const id = Number(document.getElementById('edit-need-id').value);
+  const need = treatmentNeeds.find(n => n.id === id);
+  if (!need) return;
+
+  const title = document.getElementById('edit-need-title').value.trim();
+  if (!title) { showToast('Please enter a treatment need title'); return; }
+
+  need.title = title;
+  need.goal = document.getElementById('edit-need-goal').value.trim();
+  need.objectives = [...document.querySelectorAll('#edit-objectives-list textarea')]
+    .map(t => t.value.trim()).filter(Boolean);
+  need.interventions = [...document.querySelectorAll('#edit-interventions-list textarea')]
+    .map(t => t.value.trim()).filter(Boolean);
+
+  closeEditNeedModal();
+  savePlan(); // persist
+  renderTreatmentPlan();
+  showToast(`"${need.title}" updated`);
+}
+
+function closeEditNeedModal() {
+  document.getElementById('modal-edit-need').style.display = 'none';
 }
 
 function addObjectiveField() {
@@ -1983,11 +2081,11 @@ function saveNewNeed() {
     .map(t => t.value.trim()).filter(Boolean);
   const interventions = [...document.querySelectorAll('#new-interventions-list textarea')]
     .map(t => t.value.trim()).filter(Boolean);
-
-  treatmentNeeds.push({ id: Date.now(), title, goal, objectives, interventions, expanded: true });
+    
+  treatmentNeeds.push({ id: Date.now(), title, goal, objectives, interventions, expanded: false });
+  showToast(`"${title}" added`);
   toggleAddNeed();
   renderTreatmentPlan();
-  showToast(`"${title}" added`);
 }
 
 async function savePlan() {
@@ -2031,8 +2129,7 @@ async function exportPlan() {
     } catch {}
   }
 
-  // Client-side fallback: render HTML preview
-  window._exportBlob = null;
+  // Client-side fallback: render and convert to PDF
   const clientName = `${currentClient?.first_name || ''} ${currentClient?.last_name || ''}`.trim() || 'Client';
   const today = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
 
@@ -2072,32 +2169,48 @@ async function exportPlan() {
 
   const age = calcAge(currentClient?.dob);
 
-const headerHtml = `
-  <div style="border-bottom:2px solid #4E7361;padding-bottom:20px;margin-bottom:28px;">
-    <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#7A9B8A;margin-bottom:6px;">MentAssist · Treatment Plan</div>
-    <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#4E7361;margin-bottom:8px;border-bottom:1px solid #E0D8CC;padding-bottom:4px;">Client Information</div>
-    <table style="font-size:0.875rem;line-height:1.9;color:#2C2C2C;width:100%;border-collapse:collapse;">
-      <tr><td style="color:#6B6B6B;width:160px;vertical-align:top;">Name</td><td>${clientName}</td></tr>
-      ${age !== null ? `<tr><td style="color:#6B6B6B;vertical-align:top;">Age</td><td>${age} years old</td></tr>` : ''}
-      ${currentClient?.primary_diagnosis ? `<tr><td style="color:#6B6B6B;vertical-align:top;">Primary Diagnosis</td><td>${currentClient.primary_diagnosis}</td></tr>` : ''}
-      ${currentClient?.primary_concerns  ? `<tr><td style="color:#6B6B6B;vertical-align:top;">Primary Concerns</td><td>${currentClient.primary_concerns}</td></tr>`  : ''}
-      ${currentClient?.therapy_focus     ? `<tr><td style="color:#6B6B6B;vertical-align:top;">Therapy Focus</td><td>${currentClient.therapy_focus}</td></tr>`          : ''}
-    </table>
-    <div style="font-size:0.75rem;color:#A0A0A0;margin-top:12px;">Generated: ${today} &nbsp;·&nbsp; ${treatmentNeeds.length} Treatment Need${treatmentNeeds.length !== 1 ? 's' : ''}</div>
-  </div>`;
+  const headerHtml = `
+    <div style="border-bottom:2px solid #4E7361;padding-bottom:20px;margin-bottom:28px;">
+      <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#7A9B8A;margin-bottom:6px;">MentAssist · Treatment Plan</div>
+      <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#4E7361;margin-bottom:8px;border-bottom:1px solid #E0D8CC;padding-bottom:4px;">Client Information</div>
+      <table style="font-size:0.875rem;line-height:1.9;color:#2C2C2C;width:100%;border-collapse:collapse;">
+        <tr><td style="color:#6B6B6B;width:160px;vertical-align:top;">Name</td><td>${clientName}</td></tr>
+        ${age !== null ? `<tr><td style="color:#6B6B6B;vertical-align:top;">Age</td><td>${age} years old</td></tr>` : ''}
+        ${currentClient?.primary_diagnosis ? `<tr><td style="color:#6B6B6B;vertical-align:top;">Primary Diagnosis</td><td>${currentClient.primary_diagnosis}</td></tr>` : ''}
+        ${currentClient?.primary_concerns  ? `<tr><td style="color:#6B6B6B;vertical-align:top;">Primary Concerns</td><td>${currentClient.primary_concerns}</td></tr>`  : ''}
+        ${currentClient?.therapy_focus     ? `<tr><td style="color:#6B6B6B;vertical-align:top;">Therapy Focus</td><td>${currentClient.therapy_focus}</td></tr>`          : ''}
+      </table>
+      <div style="font-size:0.75rem;color:#A0A0A0;margin-top:12px;">Generated: ${today} &nbsp;·&nbsp; ${treatmentNeeds.length} Treatment Need${treatmentNeeds.length !== 1 ? 's' : ''}</div>
+    </div>`;
 
-const html = `
-  <div style="font-family:'DM Sans',Georgia,sans-serif;color:#2C2C2C;max-width:680px;margin:0 auto;">
-    ${headerHtml}
-    ${needsHtml || '<p style="color:#A0A0A0;font-size:0.9rem;">No treatment needs have been added.</p>'}
-    <div style="margin-top:36px;padding-top:14px;border-top:1px solid #E0D8CC;font-size:0.72rem;color:#A0A0A0;display:flex;justify-content:space-between;">
-      <span>Prepared by: ${currentUser?.first_name || ''} ${currentUser?.last_name || ''}</span>
-      <span>MentAssist Therapy Platform · Confidential</span>
-    </div>
-  </div>`;
+  const html = `
+    <div style="font-family:'DM Sans',Georgia,sans-serif;color:#2C2C2C;max-width:680px;margin:0 auto;">
+      ${headerHtml}
+      ${needsHtml || '<p style="color:#A0A0A0;font-size:0.9rem;">No treatment needs have been added.</p>'}
+      <div style="margin-top:36px;padding-top:14px;border-top:1px solid #E0D8CC;font-size:0.72rem;color:#A0A0A0;display:flex;justify-content:space-between;">
+        <span>Prepared by: ${currentUser?.first_name || ''} ${currentUser?.last_name || ''}</span>
+        <span>MentAssist Therapy Platform · Confidential</span>
+      </div>
+    </div>`;
 
-document.getElementById('export-preview-body').innerHTML = html;
-document.getElementById('modal-export').style.display = 'flex';
+  // Display preview
+  document.getElementById('export-preview-body').innerHTML = html;
+  document.getElementById('modal-export').style.display = 'flex';
+
+  // Generate PDF blob for download
+  const element = document.getElementById('export-preview-body');
+  const opt = {
+    margin: 10,
+    filename: `${currentClient.first_name}-${currentClient.last_name}-treatment-plan.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+  };
+
+  html2pdf().set(opt).from(element).output('blob').then(blob => {
+    window._exportBlob = blob;
+    window._exportFilename = opt.filename;
+  });
 }
 
 function closeExportModal() {
