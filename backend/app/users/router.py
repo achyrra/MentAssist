@@ -34,10 +34,22 @@ def get_user(user_id: int, db: Session = Depends(get_db), current_user:dict = De
 @router.post("/login")
 def login(payload: UserLogin, db: Session = Depends(get_db)):
     user = repo.get_user_by_email(db, payload.email)
-    if not user or not verify_password(payload.password, user["password_hash"]):
+
+    if not user:
+        write_audit_log(db, None, "login_failed", "user", None,
+                        {"reason": "user_not_found", "email": payload.email})
         raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    if not verify_password(payload.password, user["password_hash"]):
+        write_audit_log(db, user["id"], "login_failed", "user", user["id"],
+                        {"reason": "wrong_password"})
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
     if user["status"] != "active":
+        write_audit_log(db, user["id"], "login_failed", "user", user["id"],
+                        {"reason": "account_disabled"})
         raise HTTPException(status_code=403, detail="User account is disabled")
+
     token = create_access_token(user["id"], user["role"])
     write_audit_log(db, user["id"], "login", "user", user["id"])
     return {
