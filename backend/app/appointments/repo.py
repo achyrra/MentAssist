@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import text
+from app.core.audit import write_audit_log
 
 
 def create_appointment(db: Session, data: dict):
@@ -10,7 +11,9 @@ def create_appointment(db: Session, data: dict):
     """)
     r = db.execute(q, data)
     db.commit()
-    return r.mappings().first()
+    row = r.mappings().first()
+    write_audit_log(db, data.get("created_by"), "create", "appointment", row["id"])
+    return row
 
 
 def list_appointments(db: Session, limit: int = 50, offset: int = 0):
@@ -47,7 +50,7 @@ def update_appointment(db: Session, appointment_id: int, data: dict):
     return r.mappings().first()
 
 
-def delete_appointment(db: Session, appointment_id: int):
+def delete_appointment(db: Session, appointment_id: int, user_id: int = None):
     q = text("""
         DELETE FROM appointments
         WHERE id = :id
@@ -55,4 +58,7 @@ def delete_appointment(db: Session, appointment_id: int):
     """)
     r = db.execute(q, {"id": appointment_id})
     db.commit()
-    return r.mappings().first() is not None
+    deleted = r.scalar() is not None
+    if deleted:
+        write_audit_log(db, user_id, "delete", "appointment", appointment_id)
+    return deleted

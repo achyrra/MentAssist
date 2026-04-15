@@ -38,6 +38,6 @@ def update_appointment(appointment_id: int, payload: AppointmentUpdate, db: Sess
 
 @router.delete("/{appointment_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_appointment(appointment_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    ok = repo.delete_appointment(db, appointment_id)
+    ok = repo.delete_appointment(db, appointment_id, user_id=current_user["id"])  
     if not ok:
         raise HTTPException(status_code=404, detail="Appointment not found")
