@@ -25,3 +25,6 @@ downloaded-resource.txt
 
 # TLS certs (should be generated locally and not committed)
 ops/nginx/certs/
+
+# Database backups
+backups/
