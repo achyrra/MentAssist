@@ -1,43 +1,109 @@
 # MentAssist
-Please see "SETUP_DB.md" for instructions on setting up the database.
 
-# Documentation
-- Folder "MentAssist Docs" stores individual files documenting architecture and project planning.
-- Any future changes will be documented and uploaded to the same folder.
+A clinical counselor workflow tool for managing client profiles, appointment scheduling, session notes, and treatment plans.
 
-# Dev Env Setup
-1. Clone repo at https://github.com/achyrra/MentAssist.git
-2. In terminal use the following commands:
-    - `cp mentassistdb\.env.example mentassistdb\.env`
-        - Do not commit this file
-    - `cp backend\.env.example backend\.env`
-        - Do not commit this file
-    - Generate a SECRET_KEY for `backend\.env`:
-        - `python -c "import secrets; print(secrets.token_hex(32))"`
-        - Copy the output and paste as `SECRET_KEY=<generated_value>`
-    - Generate TLS certificates (NOTE: this is a Powershell script):
-        - `.\ops\scripts\generate-certs.ps1`
-        - This creates `ops/nginx/certs/cert.pem` and `key.pem` locally
-        - Never commit these files
-    - `docker compose up --build`
-    - `docker compose ps`
-3. Verify all services are running
-4. Confirm backend docs are reachable at `http://localhost:8000/docs`
-5. Open app at `https://localhost`
-6. Login with seed accounts:
+---
+
+## Prerequisites
+
+Before running the setup script, ensure the following are installed:
+
+| Requirement | Notes |
+|---|---|
+| [Docker Desktop](https://www.docker.com/products/docker-desktop/) | Must be running before setup |
+| Python 3.8+ | Used to run `setup.py` |
+| OpenSSL | Windows: ships with Git for Windows or Miniconda — macOS/Linux: pre-installed |
+
+---
+
+## Setup
+
+1. Download and extract the source code from the provided zip, 
+or Clone the repository:
+    ```
+    git clone https://github.com/achyrra/MentAssist.git
+    cd MentAssist
+    ```
+
+2. Start Docker Desktop and wait until it is fully running.
+
+3. From the repo root, run:
+    ```
+    python setup.py
+    ```
+
+---
+
+## Verify
+
+Once setup completes, confirm everything is running:
+
+```
+docker compose ps
+```
+
+All services should show a `running` status.
+
+| Endpoint | URL |
+|---|---|
+| Backend API docs (Swagger UI) | http://localhost:8000/docs |
+| Application | https://localhost |
+
+> **Note:** Your browser will show a security warning for the self-signed TLS certificate. This is expected because the TLS certs are self-signed.
+
+---
+
+## Login
+
+Use the following seed accounts to log in:
 
 | Email | Password | Role |
 |---|---|---|
 | counselor1@mentassist.com | Mentor123! | counselor |
 | counselor2@mentassist.com | Mentor123! | counselor |
 
-# Seed Data
-Counselor2 owns three seed clients: Maya Johnson, Daniel Reyes, and Priya Nair.
+`counselor2` owns three pre-seeded clients: Maya Johnson, Daniel Reyes, and Priya Nair.
 
-# Notes
-- Seed hashes are pre-generated real bcrypt hashes -- no manual hash generation needed.
-- Backend connects as `app_user` with password `app_password_change_me`.
-- To fully reset the database: `docker compose down -v && docker compose up --build`
-- If `generate-certs.ps1` fails to locate `openssl.cnf`, run the following instead, replacing the path with your actual OpenSSL config location:
-    - `$env:OPENSSL_CONF = "C:\<your-path>\openssl.cnf"`
-    - `.\ops\scripts\generate-certs.ps1`
+---
+
+## Reset
+
+To fully wipe and re-run setup from scratch:
+
+```
+docker compose down -v
+python setup.py
+```
+
+---
+
+## Troubleshooting
+
+### OpenSSL config not found (Windows)
+
+If setup fails with `Could not locate openssl.cnf`, set `OPENSSL_CONF` manually in PowerShell before re-running:
+
+```powershell
+$env:OPENSSL_CONF = "C:\<your-path>\openssl.cnf"
+python setup.py
+```
+
+Common paths:
+
+| Installation | Path |
+|---|---|
+| Git for Windows | `C:\Program Files\Git\usr\ssl\openssl.cnf` |
+| Miniconda | `C:\ProgramData\Miniconda3\Library\ssl\openssl.cnf` |
+
+### Docker daemon not running
+
+If setup fails with `Docker daemon is not running`, open Docker Desktop, wait for it to finish starting, then re-run `python setup.py`.
+
+### Containers not reaching running state
+
+If the script times out waiting for containers, check the logs:
+
+```
+docker compose ps
+docker compose logs
+```
