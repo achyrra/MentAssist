@@ -10,7 +10,7 @@ Before running the setup script, ensure the following are installed:
 
 | Requirement | Notes |
 |---|---|
-| [Docker Desktop](https://www.docker.com/products/docker-desktop/) | Must be running before setup |
+| Docker Desktop | Must be running before setup |
 | Python 3.8+ | Used to run `setup.py` |
 | OpenSSL | Windows: ships with Git for Windows or Miniconda — macOS/Linux: pre-installed |
 
@@ -19,7 +19,7 @@ Before running the setup script, ensure the following are installed:
 ## Setup
 
 1. Download and extract the source code from the provided zip, 
-or Clone the repository:
+or clone the repository:
     ```
     git clone https://github.com/achyrra/MentAssist.git
     cd MentAssist
