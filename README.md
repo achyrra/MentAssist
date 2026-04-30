@@ -16,6 +16,50 @@ Before running the setup script, ensure the following are installed:
 
 ---
 
+## Product File Structure
+
+MentAssist/
+├── setup.py                        
+├── docker-compose.yml              
+│
+├── backend/                        
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── .env.example                
+│   └── app/
+│       ├── main.py                 
+│       ├── api/v1/                 
+│       ├── core/                   
+│       ├── db/                     
+│       ├── clients/                
+│       ├── appointments/           
+│       ├── notes/                  
+│       ├── treatment_plans/        
+│       └── users/                  
+│
+├── mentassistdb/                   
+│   ├── schema.sql                  
+│   ├── seed_dev.sql                
+│   ├── Dockerfile
+│   └── .env.example                
+│
+├── frontend/                       
+│   ├── Dockerfile
+│   └── src/
+│
+└── ops/                            
+    ├── nginx/
+    │   ├── nginx.conf
+    │   ├── sites-enabled/app.conf  
+    │   └── certs/                  
+    └── scripts/
+        ├── generate-certs.ps1      
+        ├── generate-certs.sh       
+        ├── backup_db.sh            
+        └── restore_db.sh                                     
+
+---
+
 ## Setup
 
 1. Download and extract the source code from the provided zip, 

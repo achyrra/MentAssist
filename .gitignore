@@ -28,3 +28,6 @@ ops/nginx/certs/
 
 # Database backups
 backups/
+
+# Docs
+docs/
