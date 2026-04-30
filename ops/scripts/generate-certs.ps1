@@ -1,7 +1,10 @@
 # generate-certs.ps1
 # Generates a self-signed TLS certificate for local development.
-# Requires OpenSSL (ships with Git for Windows or Miniconda).
+# Requires OpenSSL.
 # Run once after cloning the repo, or any time the cert expires.
+#
+# Usage: .\ops\scripts\generate-certs.ps1
+#   (or from repo root as called by setup.py)
 
 $certsDir = "$PSScriptRoot\..\nginx\certs"
 
@@ -22,15 +25,19 @@ if (-not (Get-Command openssl -ErrorAction SilentlyContinue)) {
 # Locate openssl.cnf relative to the openssl binary
 $opensslBin = (Get-Command openssl).Source
 $opensslBase = Split-Path (Split-Path $opensslBin -Parent) -Parent
-$cnfCandidates = @(
-    "$opensslBase\ssl\openssl.cnf",
-    "$opensslBase\Library\ssl\openssl.cnf",
-    "C:\Program Files\Git\usr\ssl\openssl.cnf"
-)
-$cnfPath = $cnfCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
-if (-not $cnfPath) {
-    Write-Error "Could not locate openssl.cnf. Set OPENSSL_CONF manually and re-run."
-    exit 1
+if ($env:OPENSSL_CONF -and (Test-Path $env:OPENSSL_CONF)) {
+    $cnfPath = $env:OPENSSL_CONF
+} else {
+    $cnfCandidates = @(
+        "$opensslBase\ssl\openssl.cnf",
+        "$opensslBase\Library\ssl\openssl.cnf",
+        "C:\Program Files\Git\usr\ssl\openssl.cnf"
+    )
+    $cnfPath = $cnfCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+    if (-not $cnfPath) {
+        Write-Error "Could not locate openssl.cnf. Set OPENSSL_CONF manually and re-run."
+        exit 1
+    }
 }
 $env:OPENSSL_CONF = $cnfPath
 Write-Host "Using OpenSSL config: $cnfPath"
